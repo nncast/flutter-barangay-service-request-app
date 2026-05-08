@@ -12,7 +12,7 @@ class ApiService {
   // OPTION 3: For Physical Device (find your IP using 'ipconfig')
   // static const String baseUrl = 'http://192.168.1.100:8000/api';
 
-  // OPTION 4: For Chrome Web
+  // OPTION 4: For Web
   // static const String baseUrl = 'http://127.0.0.1:8000/api';
 
   // Timeout duration for requests (30 seconds)
@@ -45,7 +45,7 @@ class ApiService {
   static Future<http.Response> get(String endpoint, {bool auth = true}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('GET Request: $uri'); // Debug log
+      print('GET Request: $uri');
 
       final response = await http
           .get(
@@ -54,7 +54,7 @@ class ApiService {
       )
           .timeout(timeoutDuration);
 
-      print('GET Response Status: ${response.statusCode}'); // Debug log
+      print('GET Response Status: ${response.statusCode}');
       return response;
     } catch (e) {
       print('GET Error: $e');
@@ -66,8 +66,8 @@ class ApiService {
       {bool auth = true}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('POST Request: $uri'); // Debug log
-      print('POST Body: $body'); // Debug log
+      print('POST Request: $uri');
+      print('POST Body: $body');
 
       final response = await http
           .post(
@@ -77,8 +77,8 @@ class ApiService {
       )
           .timeout(timeoutDuration);
 
-      print('POST Response Status: ${response.statusCode}'); // Debug log
-      print('POST Response Body: ${response.body}'); // Debug log
+      print('POST Response Status: ${response.statusCode}');
+      print('POST Response Body: ${response.body}');
       return response;
     } catch (e) {
       print('POST Error: $e');
@@ -90,7 +90,7 @@ class ApiService {
       {bool auth = true}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('PUT Request: $uri'); // Debug log
+      print('PUT Request: $uri');
 
       final response = await http
           .put(
@@ -100,7 +100,7 @@ class ApiService {
       )
           .timeout(timeoutDuration);
 
-      print('PUT Response Status: ${response.statusCode}'); // Debug log
+      print('PUT Response Status: ${response.statusCode}');
       return response;
     } catch (e) {
       print('PUT Error: $e');
@@ -111,7 +111,7 @@ class ApiService {
   static Future<http.Response> delete(String endpoint, {bool auth = true}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('DELETE Request: $uri'); // Debug log
+      print('DELETE Request: $uri');
 
       final response = await http
           .delete(
@@ -120,7 +120,7 @@ class ApiService {
       )
           .timeout(timeoutDuration);
 
-      print('DELETE Response Status: ${response.statusCode}'); // Debug log
+      print('DELETE Response Status: ${response.statusCode}');
       return response;
     } catch (e) {
       print('DELETE Error: $e');

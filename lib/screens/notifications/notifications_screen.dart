@@ -11,6 +11,11 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   void initState() {
     super.initState();
@@ -53,31 +58,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final rp = context.watch<RequestProvider>();
 
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: const Text('Notifications'),
+        backgroundColor: burntOrange,
+        foregroundColor: white,
+        elevation: 0,
         actions: [
           if (rp.unreadCount > 0)
             TextButton(
               onPressed: () async {
                 await rp.markAllRead();
               },
+              style: TextButton.styleFrom(
+                foregroundColor: white,
+              ),
               child: const Text('Mark all read'),
             ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () => rp.fetchNotifications(),
+        color: burntOrange,
         child: rp.notifications.isEmpty
-            ? const Center(
+            ? Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.notifications_none, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
-              Text('No notifications yet'),
-              SizedBox(height: 8),
+              Icon(Icons.notifications_none, size: 64, color: darkBrown.withOpacity(0.3)),
+              const SizedBox(height: 16),
+              Text('No notifications yet', style: TextStyle(color: darkBrown)),
+              const SizedBox(height: 8),
               Text('You\'ll be notified when your requests are updated',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: darkBrown.withOpacity(0.6))),
             ],
           ),
         )
@@ -87,27 +100,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           itemBuilder: (ctx, index) {
             final notification = rp.notifications[index];
             return Card(
-              color: notification.isRead ? null : Colors.blue[50],
+              color: notification.isRead ? white : burntOrange.withOpacity(0.05),
               margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.blue[100],
-                  child: Icon(_getIconForType(notification.type), color: Colors.blue),
+                  backgroundColor: burntOrange.withOpacity(0.1),
+                  child: Icon(_getIconForType(notification.type), color: burntOrange),
                 ),
                 title: Text(
                   notification.title,
                   style: TextStyle(
                     fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                    color: darkBrown,
                   ),
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(notification.body),
+                    Text(
+                      notification.body,
+                      style: TextStyle(color: darkBrown.withOpacity(0.7)),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       _formatDate(notification.createdAt),
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.5)),
                     ),
                   ],
                 ),
@@ -116,8 +136,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     : Container(
                   width: 10,
                   height: 10,
-                  decoration: const BoxDecoration(
-                    color: Colors.blue,
+                  decoration: BoxDecoration(
+                    color: burntOrange,
                     shape: BoxShape.circle,
                   ),
                 ),

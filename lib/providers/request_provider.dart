@@ -82,11 +82,6 @@ class RequestProvider extends ChangeNotifier {
 
         _requests = data.map((r) => RequestModel.fromJson(r)).toList();
 
-        // Optional: Apply filter in provider
-        if (status != null && status != 'all') {
-          _requests = _requests.where((req) => req.status == status).toList();
-        }
-
         debugPrint('Loaded ${_requests.length} requests');
         _error = null;
         notifyListeners();
@@ -109,15 +104,18 @@ class RequestProvider extends ChangeNotifier {
       debugPrint('Fetching request $id');
       final res = await ApiService.get('/requests/$id');
       debugPrint('Response status: ${res.statusCode}');
-      debugPrint('Response body: ${res.body}');
 
       if (res.statusCode == 200) {
         return RequestModel.fromJson(jsonDecode(res.body));
+      } else if (res.statusCode == 404) {
+        _setError('Request not found');
       }
+      return null;
     } catch (e) {
       debugPrint('Fetch request error: $e');
+      _setError('Network error: Could not fetch request');
+      return null;
     }
-    return null;
   }
 
   Future<bool> submitRequest(Map<String, dynamic> data) async {
@@ -129,7 +127,6 @@ class RequestProvider extends ChangeNotifier {
       debugPrint('Submitting request: $data');
       final res = await ApiService.post('/requests', data);
       debugPrint('Response status: ${res.statusCode}');
-      debugPrint('Response body: ${res.body}');
 
       if (res.statusCode == 201) {
         debugPrint('Request submitted successfully');
@@ -170,7 +167,8 @@ class RequestProvider extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _setError('Failed to cancel request');
+        final body = jsonDecode(res.body);
+        _setError(body['message'] ?? 'Failed to cancel request');
         _loading = false;
         notifyListeners();
         return false;
@@ -190,38 +188,74 @@ class RequestProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      String endpoint = '/admin/requests?';
-      if (status != null && status != 'all') {
-        endpoint += 'status=$status&';
+      String endpoint = '/admin/requests';
+      final List<String> params = [];
+
+      if (status != null && status != 'all' && status.isNotEmpty) {
+        params.add('status=$status');
       }
       if (search != null && search.isNotEmpty) {
-        endpoint += 'search=$search';
+        params.add('search=$search');
+      }
+
+      if (params.isNotEmpty) {
+        endpoint += '?${params.join('&')}';
       }
 
       debugPrint('Fetching admin requests from: $endpoint');
       final res = await ApiService.get(endpoint);
-      debugPrint('Response status: ${res.statusCode}');
+      debugPrint('GET Response Status: ${res.statusCode}');
+      debugPrint('GET Response Body: ${res.body}'); // Add this to see the response
 
       if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        final List<dynamic> data = body['data'] ?? body;
+        print('RAW RESPONSE BODY: ${res.body}'); // See what's actually returned
+
+        final dynamic body = jsonDecode(res.body);
+        print('PARSED RESPONSE TYPE: ${body.runtimeType}');
+        print('PARSED RESPONSE: $body');
+
+        // Your parsing code here...
+      }
+
+      if (res.statusCode == 200) {
+        final dynamic body = jsonDecode(res.body);
+
+        // Handle different response formats
+        List<dynamic> data;
+        if (body is List) {
+          // Direct list response
+          data = body;
+        } else if (body is Map && body.containsKey('data')) {
+          // Wrapped in 'data' key
+          data = body['data'];
+        } else if (body is Map && body.containsKey('requests')) {
+          // Wrapped in 'requests' key
+          data = body['requests'];
+        } else {
+          data = [];
+        }
+
         _requests = data.map((r) => RequestModel.fromJson(r)).toList();
         debugPrint('Loaded ${_requests.length} admin requests');
         _error = null;
+        notifyListeners();
       } else if (res.statusCode == 403) {
-        _setError('Access denied. Admin privileges required.');
+        _setError('Access denied. Admin/Staff privileges required.');
       } else if (res.statusCode == 401) {
         _setError('Session expired. Please login again.');
       } else {
-        _setError('Failed to load admin requests');
+        _setError('Failed to load admin requests (${res.statusCode})');
       }
-    } catch (e) {
-      _setError('Network error: Could not load admin dashboard');
+    } catch (e, stackTrace) {
       debugPrint('Fetch admin requests error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      _setError('Network error: Could not load admin requests');
     } finally {
       _loading = false;
       notifyListeners();
     }
+
+
   }
 
   Future<bool> updateStatus(int id, String status, {String? remarks}) async {
@@ -230,21 +264,28 @@ class RequestProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final body = {'status': status, if (remarks != null && remarks.isNotEmpty) 'remarks': remarks};
+      final body = {
+        'status': status,
+        if (remarks != null && remarks.isNotEmpty) 'remarks': remarks
+      };
       debugPrint('Updating status for request $id to $status');
 
       final res = await ApiService.put('/admin/requests/$id/status', body);
-      debugPrint('Response status: ${res.statusCode}');
+      debugPrint('PUT Response Status: ${res.statusCode}');
+      debugPrint('PUT Response Body: ${res.body}');
 
       if (res.statusCode == 200) {
         debugPrint('Status updated successfully');
+        // Refresh both lists
         await fetchAdminRequests();
+        await fetchDashboard();
         await fetchNotifications();
         _loading = false;
         notifyListeners();
         return true;
       } else {
-        _setError('Failed to update status');
+        final responseBody = jsonDecode(res.body);
+        _setError(responseBody['message'] ?? 'Failed to update status');
         _loading = false;
         notifyListeners();
         return false;
@@ -269,7 +310,7 @@ class RequestProvider extends ChangeNotifier {
         debugPrint('Dashboard data: $_dashboard');
         notifyListeners();
       } else if (res.statusCode == 403) {
-        _setError('Access denied. Admin privileges required.');
+        _setError('Access denied. Admin/Staff privileges required.');
       } else {
         _setError('Failed to load dashboard');
       }

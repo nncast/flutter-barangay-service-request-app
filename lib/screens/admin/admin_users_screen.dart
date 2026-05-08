@@ -15,6 +15,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   String _searchQuery = '';
   String _filterRole = 'all';
 
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +39,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     List<UserModel> filteredUsers = userProvider.users.where((user) {
       if (_filterRole != 'all' && user.role != _filterRole) return false;
       if (_searchQuery.isNotEmpty) {
-        return user.fullName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             user.email.toLowerCase().contains(_searchQuery.toLowerCase());
       }
       return true;
@@ -47,10 +52,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     });
 
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: const Text('Manage Users'),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+        backgroundColor: burntOrange,
+        foregroundColor: white,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -69,12 +76,22 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: 'Search by name or email...',
-                      prefixIcon: const Icon(Icons.search),
+                      hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
+                      prefixIcon: Icon(Icons.search, color: burntOrange),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: darkBrown),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: burntOrange, width: 2),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: white,
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -87,12 +104,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: darkBrown.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: DropdownButton<String>(
                     value: _filterRole,
                     underline: const SizedBox(),
+                    dropdownColor: white,
                     items: const [
                       DropdownMenuItem(value: 'all', child: Text('All Roles')),
                       DropdownMenuItem(value: 'admin', child: Text('Admin')),
@@ -114,12 +132,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                _statChip('Total', userProvider.users.length, Colors.blue),
+                _statChip('Total', userProvider.users.length, burntOrange),
                 const SizedBox(width: 8),
                 _statChip(
                     'Admins',
                     userProvider.users.where((u) => u.role == 'admin').length,
-                    Colors.red),
+                    burntOrange),
                 const SizedBox(width: 8),
                 _statChip(
                     'Staff',
@@ -143,11 +161,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.people_outline,
-                      size: 64, color: Colors.grey[400]),
+                      size: 64, color: darkBrown.withOpacity(0.3)),
                   const SizedBox(height: 16),
                   Text(
                     'No users found',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: darkBrown.withOpacity(0.6)),
                   ),
                 ],
               ),
@@ -178,10 +196,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         onPressed: () => _showAddUserDialog(context),
         icon: const Icon(Icons.add),
         label: const Text('Add User'),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+        backgroundColor: burntOrange,
+        foregroundColor: white,
       )
-          : null, // Staff cannot add users
+          : null,
     );
   }
 
@@ -233,7 +251,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add New User'),
+        backgroundColor: white,
+        title: Text('Add New User', style: TextStyle(color: darkBrown)),
         content: SingleChildScrollView(
           child: Form(
             key: formKey,
@@ -242,54 +261,116 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               children: [
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Full Name',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   validator: (v) => v!.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: emailCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                  validator: (v) {
+                    if (v!.isEmpty) return 'Required';
+                    if (!v.contains('@')) return 'Enter valid email';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: phoneCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Phone',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: addressCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Address',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: passCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   obscureText: true,
-                  validator: (v) => v!.length < 6 ? 'Min 6 characters' : null,
+                  validator: (v) {
+                    if (v!.isEmpty) return 'Password required';
+                    if (v.length < 6) return 'Min 6 characters';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedRole,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Role',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'resident', child: Text('Resident')),
@@ -305,14 +386,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 Navigator.pop(ctx);
+                // FIXED: Changed 'full_name' to 'name'
                 final success = await context.read<UserProvider>().createUser({
-                  'full_name': nameCtrl.text.trim(),
+                  'name': nameCtrl.text.trim(),
                   'email': emailCtrl.text.trim(),
                   'phone': phoneCtrl.text.trim(),
                   'address': addressCtrl.text.trim(),
@@ -324,12 +407,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(success ? 'User created successfully' : 'Failed to create user'),
-                      backgroundColor: success ? Colors.green : Colors.red,
+                      backgroundColor: success ? Colors.green : burntOrange,
                     ),
                   );
                 }
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: burntOrange,
+              foregroundColor: white,
+            ),
             child: const Text('Create'),
           ),
         ],
@@ -339,7 +426,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   void _showEditUserDialog(BuildContext context, UserModel user) {
     final formKey = GlobalKey<FormState>();
-    final nameCtrl = TextEditingController(text: user.fullName);
+    final nameCtrl = TextEditingController(text: user.name);
     final phoneCtrl = TextEditingController(text: user.phone ?? '');
     final addressCtrl = TextEditingController(text: user.address ?? '');
     String selectedRole = user.role;
@@ -347,7 +434,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Edit User'),
+        backgroundColor: white,
+        title: Text('Edit User', style: TextStyle(color: darkBrown)),
         content: SingleChildScrollView(
           child: Form(
             key: formKey,
@@ -356,35 +444,71 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               children: [
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Full Name',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   validator: (v) => v!.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: phoneCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Phone',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: addressCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Address',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedRole,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Role',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: darkBrown),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: burntOrange, width: 2),
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'resident', child: Text('Resident')),
@@ -400,14 +524,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 Navigator.pop(ctx);
+                // FIXED: Changed 'full_name' to 'name'
                 final success = await context.read<UserProvider>().updateUser(user.id, {
-                  'full_name': nameCtrl.text.trim(),
+                  'name': nameCtrl.text.trim(),
                   'phone': phoneCtrl.text.trim(),
                   'address': addressCtrl.text.trim(),
                   'role': selectedRole,
@@ -416,12 +542,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(success ? 'User updated successfully' : 'Failed to update user'),
-                      backgroundColor: success ? Colors.green : Colors.red,
+                      backgroundColor: success ? Colors.green : burntOrange,
                     ),
                   );
                 }
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: burntOrange,
+              foregroundColor: white,
+            ),
             child: const Text('Save'),
           ),
         ],
@@ -433,28 +563,44 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete User'),
+        backgroundColor: white,
+        title: Text('Delete User', style: TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to delete ${user.fullName}?'),
+            Text('Are you sure you want to permanently delete ${user.name}?',
+                style: TextStyle(color: darkBrown)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Text(
+                '⚠️ This will PERMANENTLY delete all requests, notifications, and history for this user. This action CANNOT be undone!',
+                style: TextStyle(fontSize: 12, color: darkBrown),
+              ),
+            ),
             const SizedBox(height: 8),
             if (user.role == 'admin')
-              const Text(
-                'Warning: This user is an admin!',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+              Text(
+                '⚠️ Warning: This user is an admin!',
+                style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
               ),
             if (currentUser?.id == user.id)
-              const Text(
-                'Warning: You cannot delete your own account!',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+              Text(
+                '⚠️ Warning: You cannot delete your own account!',
+                style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
               ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Cancel'),
           ),
           if (currentUser?.id != user.id)
@@ -466,16 +612,19 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(success ? 'User deleted successfully' : 'Failed to delete user'),
-                      backgroundColor: success ? Colors.green : Colors.red,
+                      backgroundColor: success ? Colors.green : burntOrange,
                     ),
                   );
+                  if (success) {
+                    await context.read<UserProvider>().fetchUsers();
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                foregroundColor: white,
               ),
-              child: const Text('Delete'),
+              child: const Text('Permanently Delete'),
             ),
         ],
       ),
@@ -498,10 +647,13 @@ class _UserCard extends StatelessWidget {
     this.onDelete,
   });
 
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   Color _getRoleColor(String role) {
     switch (role) {
       case 'admin':
-        return Colors.red;
+        return burntOrange;
       case 'staff':
         return Colors.orange;
       case 'resident':
@@ -545,20 +697,20 @@ class _UserCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                user.fullName,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                user.name,
+                style: TextStyle(fontWeight: FontWeight.w600, color: darkBrown),
               ),
             ),
             if (isCurrentUser)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: burntOrange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
+                child: Text(
                   'You',
-                  style: TextStyle(fontSize: 10, color: Colors.blue),
+                  style: TextStyle(fontSize: 10, color: burntOrange),
                 ),
               ),
           ],
@@ -566,7 +718,7 @@ class _UserCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(user.email, style: const TextStyle(fontSize: 12)),
+            Text(user.email, style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.7))),
             const SizedBox(height: 2),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -588,16 +740,14 @@ class _UserCard extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Only show edit button for admins
             if (isAdmin && onEdit != null)
               IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
+                icon: Icon(Icons.edit, color: burntOrange),
                 onPressed: onEdit,
               ),
-            // Only show delete button for admins and not current user
             if (isAdmin && onDelete != null && !isCurrentUser)
               IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: Icon(Icons.delete, color: Colors.red),
                 onPressed: onDelete,
               ),
           ],

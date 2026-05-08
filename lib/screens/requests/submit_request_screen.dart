@@ -21,18 +21,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
   String _priority = 'normal';
   bool _submitting = false;
 
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   void initState() {
     super.initState();
-    // Set pre-selected category if provided
     _selectedCategory = widget.preSelectedCategory;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final rp = context.read<RequestProvider>();
       rp.fetchCategories();
 
-      // If categories are loaded and we have a pre-selected category,
-      // find the full category object with all data
       if (widget.preSelectedCategory != null && rp.categories.isNotEmpty) {
         final fullCategory = rp.categories.firstWhere(
               (cat) => cat.id == widget.preSelectedCategory!.id,
@@ -59,7 +61,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
 
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category'), backgroundColor: Colors.orange),
+        SnackBar(content: const Text('Please select a category'), backgroundColor: burntOrange),
       );
       return;
     }
@@ -83,7 +85,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✓ Request submitted successfully!'), backgroundColor: Colors.green),
         );
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       }
     } else {
       if (mounted) {
@@ -99,7 +101,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
       final hex = colorHex.replaceFirst('#', '');
       return Color(int.parse('FF$hex', radix: 16));
     } catch (e) {
-      return Colors.blue;
+      return burntOrange;
     }
   }
 
@@ -108,10 +110,12 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
     final rp = context.watch<RequestProvider>();
 
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: const Text('Submit Request'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: burntOrange,
+        foregroundColor: white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -120,20 +124,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category Selection
+              // Category Selection Header
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: burntOrange.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.category, color: Colors.blue[700]),
+                    Icon(Icons.category, color: burntOrange),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Select Service Type',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: darkBrown),
                     ),
                     const Text(' *', style: TextStyle(color: Colors.red)),
                   ],
@@ -154,23 +158,23 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                       label: Text(
                         cat.name,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : categoryColor,
+                          color: isSelected ? white : categoryColor,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       selected: isSelected,
                       onSelected: (_) => setState(() => _selectedCategory = cat),
-                      backgroundColor: Colors.grey[100],
+                      backgroundColor: white,
                       selectedColor: categoryColor,
                       avatar: Icon(
                         Icons.category,
                         size: 16,
-                        color: isSelected ? Colors.white : categoryColor,
+                        color: isSelected ? white : categoryColor,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected ? categoryColor : Colors.grey[300]!,
+                          color: isSelected ? categoryColor : darkBrown.withOpacity(0.2),
                           width: 1,
                         ),
                       ),
@@ -180,20 +184,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
 
               const SizedBox(height: 24),
 
-              // Title Field
+              // Title Field Header
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: burntOrange.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.title, color: Colors.blue[700]),
+                    Icon(Icons.title, color: burntOrange),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Request Title',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: darkBrown),
                     ),
                     const Text(' *', style: TextStyle(color: Colors.red)),
                   ],
@@ -204,12 +208,22 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 controller: _titleCtrl,
                 decoration: InputDecoration(
                   hintText: 'e.g., Request for Barangay Clearance',
-                  prefixIcon: const Icon(Icons.edit_note),
+                  hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
+                  prefixIcon: Icon(Icons.edit_note, color: burntOrange),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: darkBrown),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: burntOrange, width: 2),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[50],
+                  fillColor: white,
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Title is required';
@@ -220,20 +234,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
 
               const SizedBox(height: 24),
 
-              // Description Field
+              // Description Field Header
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: burntOrange.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.description, color: Colors.blue[700]),
+                    Icon(Icons.description, color: burntOrange),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Description',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: darkBrown),
                     ),
                     const Text(' *', style: TextStyle(color: Colors.red)),
                   ],
@@ -245,12 +259,22 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 maxLines: 6,
                 decoration: InputDecoration(
                   hintText: 'Provide detailed information about your request...\n\nInclude any relevant details that will help us process your request faster.',
+                  hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
                   alignLabelWithHint: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: darkBrown),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: burntOrange, width: 2),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[50],
+                  fillColor: white,
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Description is required';
@@ -261,20 +285,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
 
               const SizedBox(height: 24),
 
-              // Priority Selection
+              // Priority Selection Header
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: burntOrange.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.priority_high, color: Colors.blue[700]),
+                    Icon(Icons.priority_high, color: burntOrange),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Priority Level',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: darkBrown),
                     ),
                   ],
                 ),
@@ -289,7 +313,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildPriorityOption('low', Icons.arrow_downward, Colors.green),
-                      _buildPriorityOption('normal', Icons.remove, Colors.blue),
+                      _buildPriorityOption('normal', Icons.remove, burntOrange),
                       _buildPriorityOption('high', Icons.arrow_upward, Colors.orange),
                       _buildPriorityOption('urgent', Icons.priority_high, Colors.red),
                     ],
@@ -303,18 +327,18 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.amber[50],
+                  color: burntOrange.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber[200]!),
+                  border: Border.all(color: burntOrange.withOpacity(0.2)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.amber[700], size: 20),
+                    Icon(Icons.info_outline, color: burntOrange, size: 20),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Your request will be reviewed by barangay staff. You will receive notifications when your request status changes.',
-                        style: TextStyle(fontSize: 12),
+                        style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.8)),
                       ),
                     ),
                   ],
@@ -330,8 +354,8 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: burntOrange,
+                    foregroundColor: white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -339,12 +363,12 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                     elevation: 2,
                   ),
                   child: _submitting
-                      ? const SizedBox(
+                      ? SizedBox(
                     height: 22,
                     width: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(white),
                     ),
                   )
                       : const Row(
@@ -379,20 +403,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
           color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : Colors.grey[300]!,
+            color: isSelected ? color : darkBrown.withOpacity(0.2),
             width: 1,
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? color : Colors.grey, size: 20),
+            Icon(icon, color: isSelected ? color : darkBrown.withOpacity(0.5), size: 20),
             const SizedBox(height: 4),
             Text(
               value[0].toUpperCase() + value.substring(1),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : Colors.grey,
+                color: isSelected ? color : darkBrown.withOpacity(0.5),
               ),
             ),
           ],

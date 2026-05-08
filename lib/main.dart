@@ -17,13 +17,18 @@ void main() {
 class BarangayApp extends StatelessWidget {
   const BarangayApp({super.key});
 
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => RequestProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()), // Add UserProvider
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: MaterialApp(
         title: 'Barangay Service System',
@@ -31,6 +36,20 @@ class BarangayApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
           useMaterial3: true,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: burntOrange,
+            foregroundColor: white,
+            elevation: 0,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: burntOrange,
+              foregroundColor: white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
         ),
         initialRoute: '/',
         routes: {
@@ -70,12 +89,17 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 1));
+    // Show splash for at least 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
     final auth = context.read<AuthProvider>();
     await auth.tryAutoLogin();
 
     if (!mounted) return;
 
+    // Navigate based on authentication status and role
     if (auth.isLoggedIn) {
       if (auth.isStaff) {
         Navigator.pushReplacementNamed(context, '/admin');
@@ -89,22 +113,82 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Color constants matching LoginScreen
+    const Color white = Color(0xFFFFFFFF);
+    const Color burntOrange = Color(0xFFBE5633);
+    const Color darkBrown = Color(0xFF46291D);
+
     return Scaffold(
       body: Container(
-        color: Colors.blue,
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.account_balance, size: 80, color: Colors.white),
-              SizedBox(height: 20),
-              Text(
-                'Barangay Service System',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              CircularProgressIndicator(color: Colors.white),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFFFAD793), // Cream Gold (from LoginScreen)
+              burntOrange,
+              darkBrown,
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // BSR Logo matching LoginScreen style
+                Image.asset(
+                  'assets/images/BSR_Logo_2.png',
+                  height: 200,
+                  width: 200,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.account_balance,
+                        size: 80,
+                        color: burntOrange,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 30),
+                // Barangay Name Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Dubinan East',
+                    style: TextStyle(
+                      color: white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 60),
+                // Loading Indicator
+                const CircularProgressIndicator(
+                  color: white,
+                  strokeWidth: 2,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Loading...',
+                  style: TextStyle(
+                    color: white.withOpacity(0.8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

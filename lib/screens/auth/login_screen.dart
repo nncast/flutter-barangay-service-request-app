@@ -16,6 +16,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passCtrl = TextEditingController();
   bool _obscure = true;
 
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -32,7 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (ok) {
-      // Navigate based on role after login
       if (auth.isStaff) {
         Navigator.pushReplacementNamed(context, '/admin');
       } else {
@@ -42,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(auth.error ?? 'Login failed'),
-          backgroundColor: Colors.red,
+          backgroundColor: burntOrange,
         ),
       );
     }
@@ -53,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
+      backgroundColor: white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -63,23 +68,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.account_balance, size: 80, color: Colors.blue),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Barangay Service System',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                  // Logo image instead of icon and text
+                  Image.asset(
+                    'assets/images/BSR_Logo_1.png',
+                    height: 200,
+                    width: 200,
                   ),
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _emailCtrl,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(color: darkBrown),
+                      prefixIcon: Icon(Icons.email, color: burntOrange),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: darkBrown),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: burntOrange, width: 2),
+                      ),
                     ),
                     validator: (v) => v!.isEmpty ? 'Enter email' : null,
                   ),
@@ -89,12 +99,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: _obscure,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock),
+                      labelStyle: TextStyle(color: darkBrown),
+                      prefixIcon: Icon(Icons.lock, color: burntOrange),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                        icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: darkBrown),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: darkBrown),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: burntOrange, width: 2),
+                      ),
                     ),
                     validator: (v) => v!.isEmpty ? 'Enter password' : null,
                   ),
@@ -102,15 +121,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: auth.loading ? null : _login,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: burntOrange,
+                      foregroundColor: white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: auth.loading
-                        ? const SizedBox(
+                        ? SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(white),
+                      ),
                     )
-                        : const Text('Login'),
+                        : const Text('Login', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
@@ -120,29 +147,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (_) => const RegisterScreen()),
                       );
                     },
+                    style: TextButton.styleFrom(
+                      foregroundColor: burntOrange,
+                    ),
                     child: const Text('Create an account'),
                   ),
                   const SizedBox(height: 30),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: darkBrown.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: darkBrown.withOpacity(0.1)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Demo Credentials:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: darkBrown,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text('Admin: admin@barangay.gov.ph / Admin1234',
-                            style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7))),
                         Text('Staff: staff@barangay.gov.ph / Staff1234',
-                            style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7))),
                         Text('Resident: maria@example.com / User1234',
-                            style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7))),
                       ],
                     ),
                   ),

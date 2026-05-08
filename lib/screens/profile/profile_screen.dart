@@ -6,47 +6,55 @@ import 'package:url_launcher/url_launcher.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.user;
 
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: const Text('Profile'),
+        backgroundColor: burntOrange,
+        foregroundColor: white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Profile Header
             Container(
-              color: Colors.blue[50],
+              color: burntOrange.withOpacity(0.05),
               padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: Colors.blue[200],
+                    backgroundColor: burntOrange.withOpacity(0.2),
                     child: Text(
                       user?.initials ?? 'U',
-                      style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.blue),
+                      style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: burntOrange),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    user?.fullName ?? 'User',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    user?.name ?? 'User',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.blue[100],
+                      color: burntOrange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       user?.role.toUpperCase() ?? 'RESIDENT',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: burntOrange),
                     ),
                   ),
                 ],
@@ -58,18 +66,18 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Personal Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 16),
                   _infoTile(Icons.email, 'Email', user?.email ?? 'Not set'),
                   _infoTile(Icons.phone, 'Phone', user?.phone ?? 'Not set'),
                   _infoTile(Icons.home, 'Address', user?.address ?? 'Not set'),
-                  const Divider(height: 32),
-                  const Text(
+                  const Divider(height: 32, color: darkBrown),
+                  Text(
                     'Account Settings',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 16),
                   _actionTile(Icons.help_outline, 'Help & Support', () {
@@ -80,14 +88,14 @@ class ProfileScreen extends StatelessWidget {
                       context: context,
                       applicationName: 'Barangay Service System',
                       applicationVersion: '1.0.0',
-                      applicationIcon: const Icon(Icons.account_balance, size: 48),
+                      applicationIcon: Icon(Icons.account_balance, size: 48, color: burntOrange),
                       children: const [
                         SizedBox(height: 8),
                         Text('A service request system for barangay residents to submit and track requests efficiently.'),
                       ],
                     );
                   }),
-                  const Divider(height: 32),
+                  const Divider(height: 32, color: darkBrown),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -95,16 +103,18 @@ class ProfileScreen extends StatelessWidget {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Logout'),
-                            content: const Text('Are you sure you want to logout?'),
+                            title: Text('Logout', style: TextStyle(color: darkBrown)),
+                            content: Text('Are you sure you want to logout?', style: TextStyle(color: darkBrown)),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
+                                style: TextButton.styleFrom(foregroundColor: darkBrown),
                                 child: const Text('Cancel'),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                                style: TextButton.styleFrom(foregroundColor: burntOrange),
+                                child: const Text('Logout'),
                               ),
                             ],
                           ),
@@ -116,11 +126,14 @@ class ProfileScreen extends StatelessWidget {
                           }
                         }
                       },
-                      icon: const Icon(Icons.logout, color: Colors.red),
-                      label: const Text('Logout', style: TextStyle(color: Colors.red)),
+                      icon: Icon(Icons.logout, color: burntOrange),
+                      label: Text('Logout', style: TextStyle(color: burntOrange)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Colors.red),
+                        side: BorderSide(color: burntOrange),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -142,19 +155,19 @@ class ProfileScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: burntOrange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 20, color: Colors.blue),
+            child: Icon(icon, size: 20, color: burntOrange),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(label, style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.6))),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 14)),
+                Text(value, style: TextStyle(fontSize: 14, color: darkBrown)),
               ],
             ),
           ),
@@ -165,9 +178,9 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _actionTile(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      leading: Icon(icon, color: burntOrange),
+      title: Text(title, style: TextStyle(color: darkBrown)),
+      trailing: Icon(Icons.chevron_right, color: darkBrown.withOpacity(0.5)),
       onTap: onTap,
     );
   }
@@ -176,20 +189,21 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        backgroundColor: white,
+        title: Row(
           children: [
-            Icon(Icons.help_outline, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('Help & Support'),
+            Icon(Icons.help_outline, color: burntOrange),
+            const SizedBox(width: 8),
+            Text('Help & Support', style: TextStyle(color: darkBrown)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'How can we help you?',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkBrown),
             ),
             const SizedBox(height: 16),
             _helpOption(
@@ -202,7 +216,7 @@ class ProfileScreen extends StatelessWidget {
                 _showContactInfoDialog(context);
               },
             ),
-            const Divider(),
+            const Divider(color: darkBrown),
             _helpOption(
               context,
               icon: Icons.question_answer,
@@ -213,7 +227,7 @@ class ProfileScreen extends StatelessWidget {
                 _showFaqDialog(context);
               },
             ),
-            const Divider(),
+            const Divider(color: darkBrown),
             _helpOption(
               context,
               icon: Icons.report_problem,
@@ -229,6 +243,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Close'),
           ),
         ],
@@ -244,10 +259,10 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: Colors.blue, size: 28),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      leading: Icon(icon, color: burntOrange, size: 28),
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.w500, color: darkBrown)),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.7))),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: darkBrown.withOpacity(0.5)),
       onTap: onTap,
     );
   }
@@ -256,39 +271,40 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Barangay Hall'),
+        backgroundColor: white,
+        title: Text('Barangay Hall', style: TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: const Icon(Icons.location_on, color: Colors.blue),
-              title: const Text('Address'),
-              subtitle: const Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City'),
+              leading: Icon(Icons.location_on, color: burntOrange),
+              title: Text('Address', style: TextStyle(color: darkBrown)),
+              subtitle: Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: darkBrown.withOpacity(0.7))),
               onTap: () {
                 final url = Uri.parse('https://www.google.com/maps/place/Dubinan+East+Barangay+Multi-purpose+Hall/@16.6891599,121.5401739,17z/data=!3m1!4b1!4m6!3m5!1s0x339006022a6053e3:0x56ebaaba7bd70229!8m2!3d16.6891599!4d121.5427488!16s%2Fg%2F1hjgkv_sh?entry=ttu&g_ep=EgoyMDI2MDUwMi4wIKXMDSoASAFQAw%3D%3D');
                 _launchUrl(url);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.phone, color: Colors.blue),
-              title: const Text('Phone'),
+              leading: Icon(Icons.phone, color: burntOrange),
+              title: Text('Phone', style: TextStyle(color: darkBrown)),
               subtitle: const Text('(02) 1234-5678'),
               onTap: () {
                 _launchUrl(Uri.parse('tel:0212345678'));
               },
             ),
             ListTile(
-              leading: const Icon(Icons.email, color: Colors.blue),
-              title: const Text('Email'),
-              subtitle: const Text('DubinanEast.BarangayHall@santiagocity.gov.ph'),
+              leading: Icon(Icons.email, color: burntOrange),
+              title: Text('Email', style: TextStyle(color: darkBrown)),
+              subtitle: const Text('Santiago.DubinanEast@barangay.gov.ph'),
               onTap: () {
                 _launchUrl(Uri.parse('mailto:DubinanEast.BarangayHall@santiagocity.gov.ph'));
               },
             ),
             ListTile(
-              leading: const Icon(Icons.access_time, color: Colors.blue),
-              title: const Text('Office Hours'),
+              leading: Icon(Icons.access_time, color: burntOrange),
+              title: Text('Office Hours', style: TextStyle(color: darkBrown)),
               subtitle: const Text('Monday - Friday: 8:00 AM - 5:00 PM'),
             ),
           ],
@@ -296,6 +312,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Close'),
           ),
         ],
@@ -307,7 +324,8 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Frequently Asked Questions'),
+        backgroundColor: white,
+        title: Text('Frequently Asked Questions', style: TextStyle(color: darkBrown)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -346,6 +364,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Close'),
           ),
         ],
@@ -357,7 +376,7 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: darkBrown.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -369,7 +388,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: burntOrange,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
@@ -387,10 +406,10 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   question,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: Color(0xFF1A1A1A),
+                    color: darkBrown,
                   ),
                 ),
               ),
@@ -422,9 +441,9 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   answer,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF333333),
+                    color: darkBrown.withOpacity(0.8),
                     height: 1.4,
                   ),
                 ),
@@ -442,17 +461,27 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Report an Issue'),
+        backgroundColor: white,
+        title: Text('Report an Issue', style: TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please describe the issue you are experiencing:'),
+            Text('Please describe the issue you are experiencing:', style: TextStyle(color: darkBrown)),
             const SizedBox(height: 16),
             TextField(
               controller: issueController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Describe the issue...',
-                border: OutlineInputBorder(),
+                hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: darkBrown),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: burntOrange, width: 2),
+                ),
               ),
               maxLines: 5,
             ),
@@ -461,6 +490,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: darkBrown),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -474,9 +504,16 @@ class ProfileScreen extends StatelessWidget {
               }
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Thank you for your report. We will look into it.')),
+                SnackBar(
+                  content: const Text('Thank you for your report. We will look into it.'),
+                  backgroundColor: burntOrange,
+                ),
               );
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: burntOrange,
+              foregroundColor: white,
+            ),
             child: const Text('Submit'),
           ),
         ],

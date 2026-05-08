@@ -15,6 +15,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   RequestModel? _request;
   bool _loading = true;
 
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +40,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending': return Colors.orange;
-      case 'in_review': return Colors.blue;
+      case 'in_review': return burntOrange;
       case 'approved': return Colors.green;
       case 'processing': return Colors.purple;
       case 'completed': return Colors.teal;
@@ -57,8 +62,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     final req = _request!;
 
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
-        title: Text(req.trackingCode),
+        title: Text(req.trackingCode, style: const TextStyle(color: white)),
+        backgroundColor: burntOrange,
+        foregroundColor: white,
+        elevation: 0,
         actions: [
           if (req.canCancel)
             TextButton(
@@ -66,11 +75,20 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Cancel Request'),
-                    content: const Text('Are you sure you want to cancel this request?'),
+                    backgroundColor: white,
+                    title: Text('Cancel Request', style: TextStyle(color: darkBrown)),
+                    content: Text('Are you sure you want to cancel this request?', style: TextStyle(color: darkBrown)),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-                      TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Yes')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: TextButton.styleFrom(foregroundColor: darkBrown),
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: TextButton.styleFrom(foregroundColor: burntOrange),
+                        child: const Text('Yes'),
+                      ),
                     ],
                   ),
                 );
@@ -80,18 +98,24 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   if (context.mounted) {
                     if (ok) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Request cancelled'), backgroundColor: Colors.orange),
+                        SnackBar(
+                          content: const Text('Request cancelled'),
+                          backgroundColor: burntOrange,
+                        ),
                       );
                       Navigator.pop(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Failed to cancel'), backgroundColor: Colors.red),
+                        const SnackBar(
+                          content: Text('Failed to cancel'),
+                          backgroundColor: Colors.red,
+                        ),
                       );
                     }
                   }
                 }
               },
-              child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+              child: const Text('Cancel', style: TextStyle(color: white)),
             ),
         ],
       ),
@@ -100,30 +124,124 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status Card
+            // Status Card - Now matches the style of cards below
             Card(
-              color: _getStatusColor(req.status).withOpacity(0.1),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: _getStatusColor(req.status)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Status: ${req.status.toUpperCase()}',
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(req.status),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Current Status',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: darkBrown,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: darkBrown),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(req.status).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            req.status.toUpperCase(),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: _getStatusColor(req.status),
                             ),
                           ),
-                          if (req.remarks != null && req.remarks!.isNotEmpty)
-                            Text('Remarks: ${req.remarks}', style: const TextStyle(fontSize: 12)),
-                        ],
+                        ),
+                      ],
+                    ),
+                    if (req.remarks != null && req.remarks!.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        'Remarks:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          color: darkBrown.withOpacity(0.7),
+                        ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        req.remarks!,
+                        style: TextStyle(color: darkBrown),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Details Card
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: burntOrange,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Request Details',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: darkBrown,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: darkBrown),
+                    const SizedBox(height: 8),
+                    _detailRow('Title', req.title),
+                    _detailRow('Category', req.category?.name ?? '-'),
+                    _detailRow('Priority', req.priority.toUpperCase()),
+                    _detailRow('Submitted', _formatDate(req.createdAt)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Description',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: darkBrown.withOpacity(0.7),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      req.description,
+                      style: TextStyle(color: darkBrown),
                     ),
                   ],
                 ),
@@ -131,39 +249,38 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Details
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Request Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const Divider(),
-                    _detailRow('Title', req.title),
-                    _detailRow('Category', req.category?.name ?? '-'),
-                    _detailRow('Priority', req.priority.toUpperCase()),
-                    _detailRow('Submitted', _formatDate(req.createdAt)),
-                    const SizedBox(height: 8),
-                    const Text('Description', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(req.description),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Status History
+            // Status History Card
             if (req.logs.isNotEmpty)
               Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Status History', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      const Divider(),
+                      Row(
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: burntOrange,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Status History',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: darkBrown,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(color: darkBrown),
+                      const SizedBox(height: 8),
                       ...req.logs.map((log) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Row(
@@ -191,8 +308,20 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                     ),
                                   ),
                                   if (log.note != null && log.note!.isNotEmpty)
-                                    Text(log.note!, style: const TextStyle(fontSize: 12)),
-                                  Text(_formatDate(log.createdAt), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                    Text(
+                                      log.note!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: darkBrown.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  Text(
+                                    _formatDate(log.createdAt),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: darkBrown.withOpacity(0.5),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -217,9 +346,20 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         children: [
           SizedBox(
             width: 80,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey)),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: darkBrown.withOpacity(0.6),
+              ),
+            ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(color: darkBrown),
+            ),
+          ),
         ],
       ),
     );

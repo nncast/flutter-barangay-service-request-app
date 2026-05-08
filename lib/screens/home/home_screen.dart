@@ -19,6 +19,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
+  // Color constants
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   void initState() {
     super.initState();
@@ -47,8 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: burntOrange,
+        unselectedItemColor: darkBrown.withOpacity(0.5),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           const BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'My Requests'),
@@ -70,6 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -77,10 +86,12 @@ class DashboardPage extends StatelessWidget {
     final user = auth.user;
 
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: const Text('Dashboard'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: burntOrange,
+        foregroundColor: white,
+        elevation: 0,
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -102,10 +113,10 @@ class DashboardPage extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.blue[100],
+                        backgroundColor: burntOrange.withOpacity(0.1),
                         child: Text(
                           user?.initials ?? 'U',
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: burntOrange),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -115,11 +126,11 @@ class DashboardPage extends StatelessWidget {
                           children: [
                             Text(
                               'Welcome,',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: TextStyle(color: darkBrown.withOpacity(0.6)),
                             ),
                             Text(
-                              user?.fullName ?? 'Resident',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              user?.name ?? 'Resident',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                             ),
                           ],
                         ),
@@ -127,12 +138,12 @@ class DashboardPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.blue[50],
+                          color: burntOrange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           user?.role.toUpperCase() ?? 'RESIDENT',
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue),
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: burntOrange),
                         ),
                       ),
                     ],
@@ -148,7 +159,7 @@ class DashboardPage extends StatelessWidget {
                     child: _StatCard(
                       title: 'Total',
                       value: '${rp.requests.length}',
-                      color: Colors.blue,
+                      color: burntOrange,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -186,8 +197,8 @@ class DashboardPage extends StatelessWidget {
                   icon: const Icon(Icons.add),
                   label: const Text('Submit New Request'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+                    backgroundColor: burntOrange,
+                    foregroundColor: white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -196,9 +207,9 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Categories
-              const Text(
+              Text(
                 'Available Services',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
               ),
               const SizedBox(height: 12),
               if (rp.categories.isEmpty)
@@ -225,18 +236,18 @@ class DashboardPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Recent Requests',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   TextButton(
                     onPressed: () {
-                      // Switch to My Requests tab
                       final homeState = context.findAncestorStateOfType<_HomeScreenState>();
                       homeState?.setState(() {
                         homeState._selectedIndex = 1;
                       });
                     },
+                    style: TextButton.styleFrom(foregroundColor: burntOrange),
                     child: const Text('See all'),
                   ),
                 ],
@@ -248,16 +259,16 @@ class DashboardPage extends StatelessWidget {
                 Card(
                   elevation: 1,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: const Padding(
-                    padding: EdgeInsets.all(32),
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
                     child: Column(
                       children: [
-                        Icon(Icons.inbox, size: 48, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('No requests yet'),
-                        SizedBox(height: 4),
+                        Icon(Icons.inbox, size: 48, color: darkBrown.withOpacity(0.3)),
+                        const SizedBox(height: 8),
+                        Text('No requests yet', style: TextStyle(color: darkBrown)),
+                        const SizedBox(height: 4),
                         Text('Tap the button above to submit your first request',
-                            style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.6))),
                       ],
                     ),
                   ),
@@ -284,6 +295,8 @@ class _StatCard extends StatelessWidget {
     required this.color,
   });
 
+  static const Color darkBrown = Color(0xFF46291D);
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -298,7 +311,7 @@ class _StatCard extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: Colors.grey[600])),
+            Text(title, style: TextStyle(color: darkBrown.withOpacity(0.6))),
           ],
         ),
       ),
@@ -310,6 +323,9 @@ class _CategoryCard extends StatelessWidget {
   final CategoryModel category;
 
   const _CategoryCard({required this.category});
+
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
 
   @override
   Widget build(BuildContext context) {
@@ -333,12 +349,12 @@ class _CategoryCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.category, size: 32, color: Colors.blue),
+              Icon(Icons.category, size: 32, color: burntOrange),
               const SizedBox(height: 8),
               Text(
                 category.name,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: darkBrown),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -355,10 +371,13 @@ class _RequestCard extends StatelessWidget {
 
   const _RequestCard({required this.request});
 
+  static const Color burntOrange = Color(0xFFBE5633);
+  static const Color darkBrown = Color(0xFF46291D);
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending': return Colors.orange;
-      case 'in_review': return Colors.blue;
+      case 'in_review': return burntOrange;
       case 'approved': return Colors.green;
       case 'processing': return Colors.purple;
       case 'completed': return Colors.teal;
@@ -389,10 +408,11 @@ class _RequestCard extends StatelessWidget {
           request.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: darkBrown, fontWeight: FontWeight.w500),
         ),
         subtitle: Text(
           request.trackingCode,
-          style: const TextStyle(fontSize: 11),
+          style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.6)),
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
