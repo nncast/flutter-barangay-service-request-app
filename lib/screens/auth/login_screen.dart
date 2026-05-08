@@ -71,8 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Logo image instead of icon and text
                   Image.asset(
                     'assets/images/BSR_Logo_1.png',
-                    height: 200,
-                    width: 200,
+                    height: 100,
+                    width: 100,
                   ),
                   const SizedBox(height: 40),
                   TextFormField(
