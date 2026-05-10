@@ -3,10 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // OPTION 1: For Android Emulator (default)
+  // OPTION 1: For Android Emulator
   // static const String baseUrl = 'http://10.0.2.2:8000/api';
 
-  // OPTION 2: For Windows Desktop
+  // OPTION 2: For Windows Desktop (default)
   static const String baseUrl = 'http://localhost:8000/api';
 
   // OPTION 3: For Physical Device (find your IP using 'ipconfig')
