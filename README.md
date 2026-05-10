@@ -50,30 +50,44 @@ flutter pub get
 
 ### 4. Configure API URL
 
-Edit `lib/core/api_service.dart`:
-
-**Default (Windows):**
+Open `lib/core/api_service.dart` and update:
 ```dart
+// Use only ONE baseUrl depending on your platform
+
+// OPTION 1: For Android Emulator
+// static const String baseUrl = 'http://10.0.2.2:8000/api';
+
+// OPTION 2: For Windows Desktop (default)
 static const String baseUrl = 'http://localhost:8000/api';
-```
 
-**For Android Emulator:**
-```dart
-static const String baseUrl = 'http://10.0.2.2:8000/api';
-```
+// OPTION 3: For Physical Device (find your IP using 'ipconfig')
+// static const String baseUrl = 'http://192.168.1.100:8000/api';
 
-**For Physical Device:**
-```dart
-static const String baseUrl = 'http://YOUR_IP_ADDRESS:8000/api';
+// OPTION 4: For Web
+// static const String baseUrl = 'http://127.0.0.1:8000/api';
 ```
 
 > **Note:** Windows URL is set as default. Change only if using emulator or physical device.
 
 ### 5. Run the app
 
+Before running Flutter, make sure your Laravel API is already running:
+
+```bash
+php artisan serve
+```
+
+You should see something like:
+```
+INFO  Server running on [http://127.0.0.1:8000].  
+```
+
+Then run the Flutter app:
+
 ```bash
 flutter run
 ```
+
 
 ---
 
