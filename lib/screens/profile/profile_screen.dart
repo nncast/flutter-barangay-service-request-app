@@ -7,6 +7,7 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   static const Color white = Color(0xFFFFFFFF);
+  static const Color creamGold = Color(0xFFFAD793);
   static const Color burntOrange = Color(0xFFBE5633);
   static const Color darkBrown = Color(0xFF46291D);
 
@@ -84,16 +85,7 @@ class ProfileScreen extends StatelessWidget {
                     _showHelpSupportDialog(context);
                   }),
                   _actionTile(Icons.info_outline, 'About', () {
-                    showAboutDialog(
-                      context: context,
-                      applicationName: 'Barangay Service System',
-                      applicationVersion: '1.0.0',
-                      applicationIcon: Icon(Icons.account_balance, size: 48, color: burntOrange),
-                      children: const [
-                        SizedBox(height: 8),
-                        Text('A service request system for barangay residents to submit and track requests efficiently.'),
-                      ],
-                    );
+                    _showAboutDialog(context);
                   }),
                   const Divider(height: 32, color: darkBrown),
                   SizedBox(
@@ -185,11 +177,194 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Column(
+          children: [
+            // BSR Logo Image
+            Image.asset(
+              'assets/images/BSR_Logo_1.png',
+              height: 60,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: burntOrange.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.account_balance,
+                    size: 48,
+                    color: burntOrange,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            const SizedBox(height: 4),
+            Text(
+              'Version 1.0.0',
+              style: TextStyle(
+                fontSize: 12,
+                color: darkBrown.withOpacity(0.6),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Divider(color: darkBrown),
+            const SizedBox(height: 12),
+            Text(
+              'A service request system for barangay residents to submit and track requests efficiently.',
+              style: TextStyle(
+                fontSize: 13,
+                color: darkBrown,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            // License Information
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: burntOrange.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: burntOrange.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.code, size: 16, color: burntOrange),
+                      const SizedBox(width: 8),
+                      Text(
+                        'License',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: darkBrown,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'MIT License',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: burntOrange,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Copyright © 2026 Barangay Service System',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: darkBrown.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files to use, copy, modify, merge, publish, and distribute copies of the Software.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: darkBrown.withOpacity(0.6),
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The software is provided "as is", without warranty of any kind.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                      color: darkBrown.withOpacity(0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Developer Credits
+                  Row(
+                    children: [
+                      Icon(Icons.people, size: 16, color: burntOrange),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Developers',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: darkBrown,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      _buildDeveloperChip('Bernabe, K.S.'),
+                      _buildDeveloperChip('Castillo, J.A.F.'),
+                      _buildDeveloperChip('Cauilan, C.A.T.'),
+                      _buildDeveloperChip('Espinocilla, E.S.Jr.'),
+                      _buildDeveloperChip('Gacrama, A.I.M.'),
+                      _buildDeveloperChip('Liquete, J.P.R.'),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(
+              foregroundColor: burntOrange,
+            ),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeveloperChip(String name) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: burntOrange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        name,
+        style: TextStyle(
+          fontSize: 10,
+          color: burntOrange,
+        ),
+      ),
+    );
+  }
+
   void _showHelpSupportDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Row(
           children: [
             Icon(Icons.help_outline, color: burntOrange),
@@ -243,7 +418,9 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
+            style: TextButton.styleFrom(
+              foregroundColor: burntOrange,
+            ),
             child: const Text('Close'),
           ),
         ],
@@ -272,6 +449,9 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Text('Barangay Hall', style: TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -312,7 +492,9 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
+            style: TextButton.styleFrom(
+              foregroundColor: burntOrange,
+            ),
             child: const Text('Close'),
           ),
         ],
@@ -325,6 +507,9 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Text('Frequently Asked Questions', style: TextStyle(color: darkBrown)),
         content: SizedBox(
           width: double.maxFinite,
@@ -364,7 +549,9 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
+            style: TextButton.styleFrom(
+              foregroundColor: burntOrange,
+            ),
             child: const Text('Close'),
           ),
         ],
@@ -462,6 +649,9 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Text('Report an Issue', style: TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -474,12 +664,15 @@ class ProfileScreen extends StatelessWidget {
                 hintText: 'Describe the issue...',
                 hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
                 border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: darkBrown),
                 ),
                 enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: burntOrange, width: 2),
                 ),
               ),
@@ -490,7 +683,9 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
+            style: TextButton.styleFrom(
+              foregroundColor: burntOrange,
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -513,6 +708,9 @@ class ProfileScreen extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: burntOrange,
               foregroundColor: white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Submit'),
           ),

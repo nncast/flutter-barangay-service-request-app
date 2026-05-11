@@ -153,33 +153,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text('Create an account'),
                   ),
                   const SizedBox(height: 30),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: darkBrown.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: darkBrown.withOpacity(0.1)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Demo Credentials:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: darkBrown,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text('Admin: admin@barangay.gov.ph / Admin1234',
-                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7))),
-                        Text('Staff: staff@barangay.gov.ph / Staff1234',
-                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7))),
-                        Text('Resident: maria@example.com / User1234',
-                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7))),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
