@@ -63,8 +63,6 @@ static const String baseUrl = 'http://localhost:8000/api';
 // OPTION 3: For Physical Device (find your IP using 'ipconfig')
 // static const String baseUrl = 'http://192.168.1.100:8000/api';
 
-// OPTION 4: For Web
-// static const String baseUrl = 'http://127.0.0.1:8000/api';
 ```
 
 > **Note:** Windows URL is set as default. Change only if using emulator or physical device.
