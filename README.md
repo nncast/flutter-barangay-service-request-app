@@ -171,5 +171,5 @@ flutter emulators --launch Pixel_6_API_33
 
 ## Repository
 
-- Flutter App: [https://github.com/nncast/flutter-barangay-service-request-app](https://github.com/nncast/flutter-barangay-service-request-app)
-- API Backend: [https://github.com/nncast/laravel-barangay-service-request-api](https://github.com/nncast/laravel-barangay-service-request-api)
+- Flutter App: [flutter-barangay-service-request-app](https://github.com/nncast/flutter-barangay-service-request-app)
+- API Backend: [laravel-barangay-service-request-api](https://github.com/nncast/laravel-barangay-service-request-api)
