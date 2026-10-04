@@ -38,8 +38,8 @@ The Barangay Service System mobile app allows residents to submit and track serv
 
 ```bash
 cd C:\laragon\www
-git clone https://github.com/nncast/barangay_app.git
-cd barangay_app
+git clone https://github.com/nncast/flutter-barangay-service-request-app.git
+cd flutter-barangay-service-request-app
 ```
 
 ### 3. Get dependencies
@@ -168,6 +168,14 @@ flutter run
 ```bash
 flutter emulators --launch Pixel_6_API_33
 ```
+
+## Contributing
+
+Contributions are welcome. Fork the repository, work on a branch from `main`, and open a pull request describing what changed and why. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and code style.
+
+## Security
+
+Please don't report vulnerabilities in public issues. Use the repository's **Security → Report a vulnerability** tab instead. See [SECURITY.md](SECURITY.md) for details.
 
 ## Repository
 
