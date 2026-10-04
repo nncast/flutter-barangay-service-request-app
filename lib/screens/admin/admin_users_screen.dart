@@ -3,6 +3,37 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
+import '../../core/ui_helpers.dart';
+
+Color _roleColor(String role) {
+  switch (role) {
+    case 'admin':
+      return kBurntOrange;
+    case 'staff':
+      return const Color(0xFF2563EB);
+    case 'resident':
+      return const Color(0xFF059669);
+    default:
+      return Colors.grey;
+  }
+}
+
+const _roleOrder = {'admin': 0, 'staff': 1, 'resident': 2};
+
+InputDecoration _fieldDecoration(String label) => InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: kDarkBrown),
+      border: const OutlineInputBorder(),
+      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3))),
+      focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: kBurntOrange, width: 2)),
+    );
+
+const _roleItems = [
+  DropdownMenuItem(value: 'resident', child: Text('Resident')),
+  DropdownMenuItem(value: 'staff', child: Text('Staff')),
+  DropdownMenuItem(value: 'admin', child: Text('Admin')),
+];
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -15,11 +46,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   String _searchQuery = '';
   String _filterRole = 'all';
 
-  // Color constants
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
-
   @override
   void initState() {
     super.initState();
@@ -28,606 +54,397 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     });
   }
 
+  Future<void> _run(Future<bool> Function(UserProvider) action, String successMessage) async {
+    final provider = context.read<UserProvider>();
+    final ok = await action(provider);
+    if (!mounted) return;
+    showMessage(context, ok ? successMessage : (provider.error ?? 'Something went wrong'), success: ok);
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
-    final authProvider = context.watch<AuthProvider>();
-    final currentUser = authProvider.user;
+    final currentUser = context.watch<AuthProvider>().user;
     final isAdmin = currentUser?.isAdmin ?? false;
+    final users = userProvider.users;
+    final query = _searchQuery.trim().toLowerCase();
 
-    // Filter users based on search and role
-    List<UserModel> filteredUsers = userProvider.users.where((user) {
-      if (_filterRole != 'all' && user.role != _filterRole) return false;
-      if (_searchQuery.isNotEmpty) {
-        return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            user.email.toLowerCase().contains(_searchQuery.toLowerCase());
+    final filteredUsers = users.where((user) {
+      if (_filterRole == 'inactive') {
+        if (user.isActive) return false;
+      } else if (_filterRole != 'all' && user.role != _filterRole) {
+        return false;
       }
-      return true;
-    }).toList();
+      if (query.isEmpty) return true;
+      return user.name.toLowerCase().contains(query) || user.email.toLowerCase().contains(query);
+    }).toList()
+      // Admins first, then staff, then residents; alphabetical within a role.
+      ..sort((a, b) {
+        final byRole = (_roleOrder[a.role] ?? 9).compareTo(_roleOrder[b.role] ?? 9);
+        return byRole != 0 ? byRole : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      });
 
-    // Sort by role (admin first, then staff, then resident)
-    filteredUsers.sort((a, b) {
-      final roleOrder = {'admin': 0, 'staff': 1, 'resident': 2};
-      return roleOrder[a.role]!.compareTo(roleOrder[b.role]!);
-    });
+    final inactiveCount = users.where((u) => !u.isActive).length;
 
     return Scaffold(
-      backgroundColor: white,
       appBar: AppBar(
-        title: const Text('Manage Users'),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-        elevation: 0,
+        title: Text(isAdmin ? 'Manage Users' : 'Users'),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh),
-            onPressed: () => userProvider.fetchUsers(),
+            onPressed: userProvider.fetchUsers,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search and Filter Bar
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search by name or email...',
-                      hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
-                      prefixIcon: Icon(Icons.search, color: burntOrange),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: darkBrown),
-                      ),
+                      hintText: 'Search name or email',
+                      hintStyle: TextStyle(color: kDarkBrown.withOpacity(0.5)),
+                      prefixIcon: const Icon(Icons.search, color: kBurntOrange),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                        borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: burntOrange, width: 2),
+                        borderSide: const BorderSide(color: kBurntOrange, width: 2),
                       ),
-                      filled: true,
-                      fillColor: white,
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
+                    onChanged: (value) => setState(() => _searchQuery = value),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: darkBrown.withOpacity(0.3)),
+                    border: Border.all(color: kDarkBrown.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: DropdownButton<String>(
-                    value: _filterRole,
-                    underline: const SizedBox(),
-                    dropdownColor: white,
-                    items: const [
-                      DropdownMenuItem(value: 'all', child: Text('All Roles')),
-                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                      DropdownMenuItem(value: 'staff', child: Text('Staff')),
-                      DropdownMenuItem(value: 'resident', child: Text('Resident')),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _filterRole = value!;
-                      });
-                    },
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _filterRole,
+                      dropdownColor: kWhite,
+                      items: [
+                        const DropdownMenuItem(value: 'all', child: Text('All roles')),
+                        const DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                        const DropdownMenuItem(value: 'staff', child: Text('Staff')),
+                        const DropdownMenuItem(value: 'resident', child: Text('Resident')),
+                        if (isAdmin) const DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
+                      ],
+                      onChanged: (value) => setState(() => _filterRole = value ?? 'all'),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          // Stats Row
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _statChip('Total', userProvider.users.length, burntOrange),
-                const SizedBox(width: 8),
-                _statChip(
-                    'Admins',
-                    userProvider.users.where((u) => u.role == 'admin').length,
-                    burntOrange),
-                const SizedBox(width: 8),
-                _statChip(
-                    'Staff',
-                    userProvider.users.where((u) => u.role == 'staff').length,
-                    Colors.orange),
-                const SizedBox(width: 8),
-                _statChip(
-                    'Residents',
-                    userProvider.users.where((u) => u.role == 'resident').length,
-                    Colors.green),
+                _statChip('Total', users.length, kDarkBrown),
+                _statChip('Admins', users.where((u) => u.role == 'admin').length, _roleColor('admin')),
+                _statChip('Staff', users.where((u) => u.role == 'staff').length, _roleColor('staff')),
+                _statChip('Residents', users.where((u) => u.role == 'resident').length, _roleColor('resident')),
+                if (inactiveCount > 0) _statChip('Inactive', inactiveCount, Colors.grey),
               ],
             ),
           ),
-          // Users List
+          if (!isAdmin)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: kCreamGold.withOpacity(0.35),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'View only — only admins can add, edit or delete users.',
+                style: TextStyle(fontSize: 12, color: kDarkBrown),
+              ),
+            ),
           Expanded(
-            child: userProvider.loading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredUsers.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.people_outline,
-                      size: 64, color: darkBrown.withOpacity(0.3)),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No users found',
-                    style: TextStyle(color: darkBrown.withOpacity(0.6)),
-                  ),
-                ],
-              ),
-            )
-                : RefreshIndicator(
-              onRefresh: () => userProvider.fetchUsers(),
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredUsers.length,
-                itemBuilder: (ctx, index) {
-                  final user = filteredUsers[index];
-                  final isCurrentUser = currentUser?.id == user.id;
-                  return _UserCard(
-                    user: user,
-                    isCurrentUser: isCurrentUser,
-                    isAdmin: isAdmin,
-                    onEdit: isAdmin ? () => _showEditUserDialog(context, user) : null,
-                    onDelete: isAdmin ? () => _confirmDeleteUser(context, user, currentUser) : null,
-                  );
-                },
-              ),
+            child: RefreshIndicator(
+              color: kBurntOrange,
+              onRefresh: userProvider.fetchUsers,
+              child: userProvider.loading && users.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : filteredUsers.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 80),
+                            Icon(Icons.people_outline, size: 64, color: kDarkBrown.withOpacity(0.3)),
+                            const SizedBox(height: 16),
+                            Text(
+                              userProvider.error ?? 'No users found',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: kDarkBrown.withOpacity(0.6)),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+                          itemCount: filteredUsers.length,
+                          itemBuilder: (ctx, index) {
+                            final user = filteredUsers[index];
+                            final isCurrentUser = currentUser?.id == user.id;
+                            return _UserCard(
+                              user: user,
+                              isCurrentUser: isCurrentUser,
+                              onEdit: isAdmin ? () => _showEditUserDialog(user, isCurrentUser) : null,
+                              onDelete: isAdmin && !isCurrentUser ? () => _confirmDeleteUser(user) : null,
+                            );
+                          },
+                        ),
             ),
           ),
         ],
       ),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
-        onPressed: () => _showAddUserDialog(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add User'),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-      )
+              onPressed: _showAddUserDialog,
+              icon: const Icon(Icons.person_add),
+              label: const Text('Add User'),
+              backgroundColor: kBurntOrange,
+              foregroundColor: kWhite,
+            )
           : null,
     );
   }
 
   Widget _statChip(String label, int count, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              count.toString(),
-              style: const TextStyle(
-                fontSize: 10,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddUserDialog(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final nameCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final phoneCtrl = TextEditingController();
-    final addressCtrl = TextEditingController();
-    final passCtrl = TextEditingController();
-    String selectedRole = 'resident';
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: white,
-        title: Text('Add New User', style: TextStyle(color: darkBrown)),
-        content: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Full Name',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: emailCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  validator: (v) {
-                    if (v!.isEmpty) return 'Required';
-                    if (!v.contains('@')) return 'Enter valid email';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: phoneCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Phone',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: addressCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Address',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: passCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  obscureText: true,
-                  validator: (v) {
-                    if (v!.isEmpty) return 'Password required';
-                    if (v.length < 6) return 'Min 6 characters';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  decoration: InputDecoration(
-                    labelText: 'Role',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'resident', child: Text('Resident')),
-                    DropdownMenuItem(value: 'staff', child: Text('Staff')),
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                  ],
-                  onChanged: (value) => selectedRole = value!,
-                ),
-              ],
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Chip(
+        visualDensity: VisualDensity.compact,
+        backgroundColor: color.withOpacity(0.08),
+        side: BorderSide(color: color.withOpacity(0.3)),
+        shape: const StadiumBorder(),
+        label: Text(
+          '$label  $count',
+          style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx);
-                // FIXED: Changed 'full_name' to 'name'
-                final success = await context.read<UserProvider>().createUser({
-                  'name': nameCtrl.text.trim(),
-                  'email': emailCtrl.text.trim(),
-                  'phone': phoneCtrl.text.trim(),
-                  'address': addressCtrl.text.trim(),
-                  'password': passCtrl.text,
-                  'password_confirmation': passCtrl.text,
-                  'role': selectedRole,
-                });
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'User created successfully' : 'Failed to create user'),
-                      backgroundColor: success ? Colors.green : burntOrange,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: burntOrange,
-              foregroundColor: white,
-            ),
-            child: const Text('Create'),
-          ),
-        ],
       ),
     );
   }
 
-  void _showEditUserDialog(BuildContext context, UserModel user) {
-    final formKey = GlobalKey<FormState>();
-    final nameCtrl = TextEditingController(text: user.name);
-    final phoneCtrl = TextEditingController(text: user.phone ?? '');
-    final addressCtrl = TextEditingController(text: user.address ?? '');
-    String selectedRole = user.role;
-
-    showDialog(
+  Future<void> _showAddUserDialog() async {
+    final data = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: white,
-        title: Text('Edit User', style: TextStyle(color: darkBrown)),
-        content: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Full Name',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: phoneCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Phone',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: addressCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Address',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  decoration: InputDecoration(
-                    labelText: 'Role',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'resident', child: Text('Resident')),
-                    DropdownMenuItem(value: 'staff', child: Text('Staff')),
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                  ],
-                  onChanged: (value) => selectedRole = value!,
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx);
-                // FIXED: Changed 'full_name' to 'name'
-                final success = await context.read<UserProvider>().updateUser(user.id, {
-                  'name': nameCtrl.text.trim(),
-                  'phone': phoneCtrl.text.trim(),
-                  'address': addressCtrl.text.trim(),
-                  'role': selectedRole,
-                });
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'User updated successfully' : 'Failed to update user'),
-                      backgroundColor: success ? Colors.green : burntOrange,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: burntOrange,
-              foregroundColor: white,
-            ),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+      builder: (_) => const _UserFormDialog(),
     );
+    if (data == null) return;
+    await _run((p) => p.createUser(data), 'User created');
   }
 
-  void _confirmDeleteUser(BuildContext context, UserModel user, UserModel? currentUser) {
-    showDialog(
+  Future<void> _showEditUserDialog(UserModel user, bool isCurrentUser) async {
+    final data = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _UserFormDialog(user: user, isCurrentUser: isCurrentUser),
+    );
+    if (data == null) return;
+    await _run((p) => p.updateUser(user.id, data), 'User updated');
+  }
+
+  Future<void> _confirmDeleteUser(UserModel user) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: white,
-        title: Text('Delete User', style: TextStyle(color: darkBrown)),
+        title: const Text('Delete User', style: TextStyle(color: kDarkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to permanently delete ${user.name}?',
-                style: TextStyle(color: darkBrown)),
-            const SizedBox(height: 8),
+            Text('Permanently delete ${user.name}?', style: const TextStyle(color: kDarkBrown)),
+            const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.red.withOpacity(0.3)),
               ),
-              child: Text(
-                '⚠️ This will PERMANENTLY delete all requests, notifications, and history for this user. This action CANNOT be undone!',
-                style: TextStyle(fontSize: 12, color: darkBrown),
+              child: const Text(
+                'Their own requests and notifications are deleted too. This cannot be undone. '
+                'To keep their records, deactivate the account instead (Edit → Active).',
+                style: TextStyle(fontSize: 12, color: kDarkBrown),
               ),
             ),
-            const SizedBox(height: 8),
-            if (user.role == 'admin')
-              Text(
-                '⚠️ Warning: This user is an admin!',
+            if (user.isAdmin) ...[
+              const SizedBox(height: 8),
+              const Text(
+                'This user is an admin.',
                 style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
               ),
-            if (currentUser?.id == user.id)
-              Text(
-                '⚠️ Warning: You cannot delete your own account!',
-                style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
-              ),
+            ],
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
+            onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(foregroundColor: kDarkBrown),
             child: const Text('Cancel'),
           ),
-          if (currentUser?.id != user.id)
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                final success = await context.read<UserProvider>().deleteUser(user.id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'User deleted successfully' : 'Failed to delete user'),
-                      backgroundColor: success ? Colors.green : burntOrange,
-                    ),
-                  );
-                  if (success) {
-                    await context.read<UserProvider>().fetchUsers();
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: white,
-              ),
-              child: const Text('Permanently Delete'),
-            ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: kWhite),
+            child: const Text('Delete'),
+          ),
         ],
       ),
+    );
+    if (confirm != true) return;
+    await _run((p) => p.deleteUser(user.id), '${user.name} was deleted');
+  }
+}
+
+/// Add/edit form. Returns the data to send, or null if cancelled.
+class _UserFormDialog extends StatefulWidget {
+  final UserModel? user;
+  final bool isCurrentUser;
+
+  const _UserFormDialog({this.user, this.isCurrentUser = false});
+
+  @override
+  State<_UserFormDialog> createState() => _UserFormDialogState();
+}
+
+class _UserFormDialogState extends State<_UserFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final _name = TextEditingController(text: widget.user?.name ?? '');
+  late final _email = TextEditingController(text: widget.user?.email ?? '');
+  late final _phone = TextEditingController(text: widget.user?.phone ?? '');
+  late final _address = TextEditingController(text: widget.user?.address ?? '');
+  final _password = TextEditingController();
+  late String _role = widget.user?.role ?? 'resident';
+  late bool _active = widget.user?.isActive ?? true;
+
+  bool get _isEdit => widget.user != null;
+
+  @override
+  void dispose() {
+    for (final c in [_name, _email, _phone, _address, _password]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    final phone = _phone.text.trim();
+    final address = _address.text.trim();
+    Navigator.pop(context, <String, dynamic>{
+      'name': _name.text.trim(),
+      'phone': phone.isEmpty ? null : phone,
+      'address': address.isEmpty ? null : address,
+      if (!widget.isCurrentUser) 'role': _role,
+      if (_isEdit && !widget.isCurrentUser) 'is_active': _active,
+      if (!_isEdit) ...{
+        'email': _email.text.trim(),
+        'password': _password.text,
+        'password_confirmation': _password.text,
+      },
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(_isEdit ? 'Edit User' : 'Add New User', style: const TextStyle(color: kDarkBrown)),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _name,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: _fieldDecoration('Full Name'),
+                  validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _email,
+                  enabled: !_isEdit,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: _fieldDecoration(_isEdit ? 'Email (can\'t be changed)' : 'Email'),
+                  validator: (v) {
+                    if (_isEdit) return null;
+                    final email = (v ?? '').trim();
+                    if (email.isEmpty) return 'Required';
+                    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) return 'Enter a valid email';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _phone,
+                  keyboardType: TextInputType.phone,
+                  decoration: _fieldDecoration('Phone (optional)'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _address,
+                  decoration: _fieldDecoration('Address (optional)'),
+                  maxLines: 2,
+                ),
+                if (!_isEdit) ...[
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _password,
+                    decoration: _fieldDecoration('Password'),
+                    obscureText: true,
+                    validator: (v) => (v ?? '').length < 8 ? 'At least 8 characters' : null,
+                  ),
+                ],
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _role,
+                  decoration: _fieldDecoration(widget.isCurrentUser ? 'Role (your own — can\'t change)' : 'Role'),
+                  items: _roleItems,
+                  onChanged: widget.isCurrentUser ? null : (value) => setState(() => _role = value ?? _role),
+                ),
+                if (_isEdit && !widget.isCurrentUser)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Active', style: TextStyle(color: kDarkBrown)),
+                    subtitle: Text(
+                      _active ? 'Can sign in' : 'Signed out and blocked from signing in',
+                      style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
+                    ),
+                    value: _active,
+                    onChanged: (v) => setState(() => _active = v),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: kDarkBrown),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(onPressed: _save, child: Text(_isEdit ? 'Save' : 'Create')),
+      ],
     );
   }
 }
@@ -635,122 +452,85 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 class _UserCard extends StatelessWidget {
   final UserModel user;
   final bool isCurrentUser;
-  final bool isAdmin;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
   const _UserCard({
     required this.user,
     required this.isCurrentUser,
-    required this.isAdmin,
     this.onEdit,
     this.onDelete,
   });
 
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
-
-  Color _getRoleColor(String role) {
-    switch (role) {
-      case 'admin':
-        return burntOrange;
-      case 'staff':
-        return Colors.orange;
-      case 'resident':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getRoleLabel(String role) {
-    switch (role) {
-      case 'admin':
-        return 'Admin';
-      case 'staff':
-        return 'Staff';
-      case 'resident':
-        return 'Resident';
-      default:
-        return role;
-    }
-  }
+  Widget _badge(String text, Color color) => Container(
+        margin: const EdgeInsets.only(right: 6, top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(text, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+      );
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getRoleColor(user.role).withOpacity(0.1),
-          child: Text(
-            user.initials,
-            style: TextStyle(
-              color: _getRoleColor(user.role),
-              fontWeight: FontWeight.bold,
-            ),
+    final color = user.isActive ? _roleColor(user.role) : Colors.grey;
+
+    return Opacity(
+      opacity: user.isActive ? 1 : 0.65,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        elevation: 1.5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          contentPadding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+          leading: CircleAvatar(
+            backgroundColor: color.withOpacity(0.12),
+            child: Text(user.initials, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           ),
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                user.name,
-                style: TextStyle(fontWeight: FontWeight.w600, color: darkBrown),
+          title: Text(
+            user.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w600, color: kDarkBrown),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user.email,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.7)),
               ),
-            ),
-            if (isCurrentUser)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: burntOrange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+              Wrap(
+                children: [
+                  _badge(user.roleLabel, color),
+                  if (isCurrentUser) _badge('You', kBurntOrange),
+                  if (!user.isActive) _badge('Inactive', Colors.grey),
+                ],
+              ),
+            ],
+          ),
+          trailing: (onEdit == null && onDelete == null)
+              ? null
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onEdit != null)
+                      IconButton(
+                        tooltip: 'Edit',
+                        icon: const Icon(Icons.edit_outlined, color: kBurntOrange),
+                        onPressed: onEdit,
+                      ),
+                    if (onDelete != null)
+                      IconButton(
+                        tooltip: 'Delete',
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: onDelete,
+                      ),
+                  ],
                 ),
-                child: Text(
-                  'You',
-                  style: TextStyle(fontSize: 10, color: burntOrange),
-                ),
-              ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(user.email, style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.7))),
-            const SizedBox(height: 2),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: _getRoleColor(user.role).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                _getRoleLabel(user.role),
-                style: TextStyle(
-                  fontSize: 10,
-                  color: _getRoleColor(user.role),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isAdmin && onEdit != null)
-              IconButton(
-                icon: Icon(Icons.edit, color: burntOrange),
-                onPressed: onEdit,
-              ),
-            if (isAdmin && onDelete != null && !isCurrentUser)
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: onDelete,
-              ),
-          ],
         ),
       ),
     );

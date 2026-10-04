@@ -7,92 +7,84 @@ class RequestProvider extends ChangeNotifier {
   List<RequestModel> _requests = [];
   List<CategoryModel> _categories = [];
   List<NotificationModel> _notifications = [];
-  Map<String, dynamic> _dashboard = {};
+  DashboardStats _dashboard = const DashboardStats();
   bool _loading = false;
+  bool _categoriesLoading = false;
+  bool _categoriesFailed = false;
   bool _submitting = false;
   String? _error;
 
   List<RequestModel> get requests => _requests;
   List<CategoryModel> get categories => _categories;
   List<NotificationModel> get notifications => _notifications;
-  Map<String, dynamic> get dashboard => _dashboard;
+  DashboardStats get dashboard => _dashboard;
   bool get loading => _loading;
+  bool get categoriesLoading => _categoriesLoading;
+  bool get categoriesFailed => _categoriesFailed;
   bool get submitting => _submitting;
+
+  /// Message from the last failed action, for the screen to show.
   String? get error => _error;
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
-  void _setError(String? error) {
-    _error = error;
-    debugPrint('Provider Error: $error');
-    notifyListeners();
+  static List<dynamic> _asList(dynamic body) {
+    if (body is List) return body;
+    if (body is Map && body['data'] is List) return body['data'];
+    return const [];
+  }
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (_error == error) {
-        _error = null;
-        notifyListeners();
-      }
-    });
+  String _statusError(int status, String fallback) {
+    if (status == 401) return 'Your session has expired. Please log in again.';
+    if (status == 403) return 'You don\'t have permission to do that.';
+    return fallback;
   }
 
   Future<void> fetchCategories() async {
+    _categoriesLoading = true;
+    _categoriesFailed = false;
+    notifyListeners();
+
     try {
       final res = await ApiService.get('/categories', auth: false);
-      debugPrint('Categories Response: ${res.statusCode}');
-
       if (res.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(res.body);
-        _categories = data.map((c) => CategoryModel.fromJson(c)).toList();
-        debugPrint('Loaded ${_categories.length} categories');
-        notifyListeners();
+        _categories = _asList(jsonDecode(res.body))
+            .map((c) => CategoryModel.fromJson(c))
+            .toList();
       } else {
-        _setError('Failed to load categories');
+        _categoriesFailed = true;
       }
     } catch (e) {
-      _setError('Connection error: $e');
       debugPrint('Fetch categories error: $e');
+      _categoriesFailed = true;
+    } finally {
+      _categoriesLoading = false;
+      notifyListeners();
     }
   }
 
-  Future<void> fetchRequests({String? status}) async {
+  /// The signed-in resident's own requests.
+  Future<void> fetchRequests() => _fetchRequestList('/requests');
+
+  /// Every request (staff and admins).
+  Future<void> fetchAdminRequests() => _fetchRequestList('/admin/requests');
+
+  Future<void> _fetchRequestList(String endpoint) async {
     _loading = true;
     _error = null;
     notifyListeners();
 
     try {
-      String endpoint = '/requests';
-      if (status != null && status != 'all' && status.isNotEmpty) {
-        endpoint += '?status=$status';
-      }
-
-      debugPrint('Fetching requests from: $endpoint');
       final res = await ApiService.get(endpoint);
-      debugPrint('Response status: ${res.statusCode}');
-
       if (res.statusCode == 200) {
-        final dynamic body = jsonDecode(res.body);
-
-        List<dynamic> data;
-        if (body is List) {
-          data = body;
-        } else if (body is Map && body.containsKey('data')) {
-          data = body['data'];
-        } else {
-          data = [];
-        }
-
-        _requests = data.map((r) => RequestModel.fromJson(r)).toList();
-
-        debugPrint('Loaded ${_requests.length} requests');
-        _error = null;
-        notifyListeners();
-      } else if (res.statusCode == 401) {
-        _setError('Session expired. Please login again.');
+        _requests = _asList(jsonDecode(res.body))
+            .map((r) => RequestModel.fromJson(r))
+            .toList();
       } else {
-        _setError('Failed to load requests (${res.statusCode})');
+        _error = _statusError(res.statusCode, 'Failed to load requests (${res.statusCode})');
       }
     } catch (e) {
-      _setError('Network error: Unable to connect to server');
       debugPrint('Fetch requests error: $e');
+      _error = 'Unable to connect to the server.';
     } finally {
       _loading = false;
       notifyListeners();
@@ -101,21 +93,19 @@ class RequestProvider extends ChangeNotifier {
 
   Future<RequestModel?> fetchRequest(int id) async {
     try {
-      debugPrint('Fetching request $id');
       final res = await ApiService.get('/requests/$id');
-      debugPrint('Response status: ${res.statusCode}');
-
       if (res.statusCode == 200) {
         return RequestModel.fromJson(jsonDecode(res.body));
-      } else if (res.statusCode == 404) {
-        _setError('Request not found');
       }
-      return null;
+      _error = res.statusCode == 404
+          ? 'Request not found'
+          : _statusError(res.statusCode, 'Failed to load request');
     } catch (e) {
       debugPrint('Fetch request error: $e');
-      _setError('Network error: Could not fetch request');
-      return null;
+      _error = 'Unable to connect to the server.';
     }
+    notifyListeners();
+    return null;
   }
 
   Future<bool> submitRequest(Map<String, dynamic> data) async {
@@ -124,198 +114,80 @@ class RequestProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('Submitting request: $data');
       final res = await ApiService.post('/requests', data);
-      debugPrint('Response status: ${res.statusCode}');
-
       if (res.statusCode == 201) {
-        debugPrint('Request submitted successfully');
         await fetchRequests();
-        _submitting = false;
-        notifyListeners();
         return true;
-      } else {
-        final body = jsonDecode(res.body);
-        _setError(body['message'] ?? 'Failed to submit request');
-        _submitting = false;
-        notifyListeners();
-        return false;
       }
+      _error = ApiService.errorMessage(res, 'Failed to submit request');
+      return false;
     } catch (e) {
-      _setError('Network error: Could not submit request');
       debugPrint('Submit request error: $e');
+      _error = 'Unable to connect to the server.';
+      return false;
+    } finally {
       _submitting = false;
       notifyListeners();
-      return false;
     }
   }
 
   Future<bool> cancelRequest(int id) async {
-    _loading = true;
+    _submitting = true;
     _error = null;
     notifyListeners();
 
     try {
-      debugPrint('Cancelling request $id');
       final res = await ApiService.delete('/requests/$id');
-      debugPrint('Response status: ${res.statusCode}');
-
       if (res.statusCode == 200) {
-        debugPrint('Request cancelled successfully');
         await fetchRequests();
-        _loading = false;
-        notifyListeners();
         return true;
-      } else {
-        final body = jsonDecode(res.body);
-        _setError(body['message'] ?? 'Failed to cancel request');
-        _loading = false;
-        notifyListeners();
-        return false;
       }
-    } catch (e) {
-      _setError('Network error: Could not cancel request');
-      debugPrint('Cancel request error: $e');
-      _loading = false;
-      notifyListeners();
+      _error = ApiService.errorMessage(res, 'Failed to cancel request');
       return false;
-    }
-  }
-
-  Future<void> fetchAdminRequests({String? status, String? search}) async {
-    _loading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      String endpoint = '/admin/requests';
-      final List<String> params = [];
-
-      if (status != null && status != 'all' && status.isNotEmpty) {
-        params.add('status=$status');
-      }
-      if (search != null && search.isNotEmpty) {
-        params.add('search=$search');
-      }
-
-      if (params.isNotEmpty) {
-        endpoint += '?${params.join('&')}';
-      }
-
-      debugPrint('Fetching admin requests from: $endpoint');
-      final res = await ApiService.get(endpoint);
-      debugPrint('GET Response Status: ${res.statusCode}');
-      debugPrint('GET Response Body: ${res.body}'); // Add this to see the response
-
-      if (res.statusCode == 200) {
-        print('RAW RESPONSE BODY: ${res.body}'); // See what's actually returned
-
-        final dynamic body = jsonDecode(res.body);
-        print('PARSED RESPONSE TYPE: ${body.runtimeType}');
-        print('PARSED RESPONSE: $body');
-
-        // Your parsing code here...
-      }
-
-      if (res.statusCode == 200) {
-        final dynamic body = jsonDecode(res.body);
-
-        // Handle different response formats
-        List<dynamic> data;
-        if (body is List) {
-          // Direct list response
-          data = body;
-        } else if (body is Map && body.containsKey('data')) {
-          // Wrapped in 'data' key
-          data = body['data'];
-        } else if (body is Map && body.containsKey('requests')) {
-          // Wrapped in 'requests' key
-          data = body['requests'];
-        } else {
-          data = [];
-        }
-
-        _requests = data.map((r) => RequestModel.fromJson(r)).toList();
-        debugPrint('Loaded ${_requests.length} admin requests');
-        _error = null;
-        notifyListeners();
-      } else if (res.statusCode == 403) {
-        _setError('Access denied. Admin/Staff privileges required.');
-      } else if (res.statusCode == 401) {
-        _setError('Session expired. Please login again.');
-      } else {
-        _setError('Failed to load admin requests (${res.statusCode})');
-      }
-    } catch (e, stackTrace) {
-      debugPrint('Fetch admin requests error: $e');
-      debugPrint('Stack trace: $stackTrace');
-      _setError('Network error: Could not load admin requests');
+    } catch (e) {
+      debugPrint('Cancel request error: $e');
+      _error = 'Unable to connect to the server.';
+      return false;
     } finally {
-      _loading = false;
+      _submitting = false;
       notifyListeners();
     }
-
-
   }
 
   Future<bool> updateStatus(int id, String status, {String? remarks}) async {
-    _loading = true;
+    _submitting = true;
     _error = null;
     notifyListeners();
 
     try {
-      final body = {
+      final res = await ApiService.put('/admin/requests/$id/status', {
         'status': status,
-        if (remarks != null && remarks.isNotEmpty) 'remarks': remarks
-      };
-      debugPrint('Updating status for request $id to $status');
-
-      final res = await ApiService.put('/admin/requests/$id/status', body);
-      debugPrint('PUT Response Status: ${res.statusCode}');
-      debugPrint('PUT Response Body: ${res.body}');
-
+        'remarks': (remarks == null || remarks.isEmpty) ? null : remarks,
+      });
       if (res.statusCode == 200) {
-        debugPrint('Status updated successfully');
-        // Refresh both lists
-        await fetchAdminRequests();
-        await fetchDashboard();
-        await fetchNotifications();
-        _loading = false;
-        notifyListeners();
+        await Future.wait([fetchAdminRequests(), fetchDashboard()]);
         return true;
-      } else {
-        final responseBody = jsonDecode(res.body);
-        _setError(responseBody['message'] ?? 'Failed to update status');
-        _loading = false;
-        notifyListeners();
-        return false;
       }
-    } catch (e) {
-      _setError('Network error: Could not update status');
-      debugPrint('Update status error: $e');
-      _loading = false;
-      notifyListeners();
+      _error = ApiService.errorMessage(res, 'Failed to update status');
       return false;
+    } catch (e) {
+      debugPrint('Update status error: $e');
+      _error = 'Unable to connect to the server.';
+      return false;
+    } finally {
+      _submitting = false;
+      notifyListeners();
     }
   }
 
   Future<void> fetchDashboard() async {
     try {
-      debugPrint('Fetching dashboard');
       final res = await ApiService.get('/admin/dashboard');
-      debugPrint('Dashboard response status: ${res.statusCode}');
-
       if (res.statusCode == 200) {
-        _dashboard = jsonDecode(res.body);
-        debugPrint('Dashboard data: $_dashboard');
+        _dashboard = DashboardStats.fromJson(jsonDecode(res.body));
         notifyListeners();
-      } else if (res.statusCode == 403) {
-        _setError('Access denied. Admin/Staff privileges required.');
-      } else {
-        _setError('Failed to load dashboard');
       }
     } catch (e) {
-      _setError('Network error: Could not load dashboard');
       debugPrint('Fetch dashboard error: $e');
     }
   }
@@ -323,12 +195,10 @@ class RequestProvider extends ChangeNotifier {
   Future<void> fetchNotifications() async {
     try {
       final res = await ApiService.get('/notifications');
-      debugPrint('Notifications response status: ${res.statusCode}');
-
       if (res.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(res.body);
-        _notifications = data.map((n) => NotificationModel.fromJson(n)).toList();
-        debugPrint('Loaded ${_notifications.length} notifications');
+        _notifications = _asList(jsonDecode(res.body))
+            .map((n) => NotificationModel.fromJson(n))
+            .toList();
         notifyListeners();
       }
     } catch (e) {
@@ -340,11 +210,25 @@ class RequestProvider extends ChangeNotifier {
     try {
       final res = await ApiService.put('/notifications/read-all', {});
       if (res.statusCode == 200) {
-        await fetchNotifications();
+        _notifications = _notifications.map((n) => n.markedRead()).toList();
+        notifyListeners();
       }
     } catch (e) {
       debugPrint('Mark all read error: $e');
-      _setError('Failed to mark notifications as read');
+    }
+  }
+
+  Future<void> markRead(NotificationModel notification) async {
+    if (notification.isRead) return;
+    // Update the badge right away; the server call is fire-and-forget.
+    _notifications = _notifications
+        .map((n) => n.id == notification.id ? n.markedRead() : n)
+        .toList();
+    notifyListeners();
+    try {
+      await ApiService.put('/notifications/${notification.id}/read', {});
+    } catch (e) {
+      debugPrint('Mark read error: $e');
     }
   }
 
@@ -353,12 +237,15 @@ class RequestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clears everything on logout so the next account never sees stale data.
   void reset() {
     _requests = [];
     _categories = [];
     _notifications = [];
-    _dashboard = {};
+    _dashboard = const DashboardStats();
     _loading = false;
+    _categoriesLoading = false;
+    _categoriesFailed = false;
     _submitting = false;
     _error = null;
     notifyListeners();

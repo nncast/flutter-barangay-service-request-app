@@ -36,7 +36,7 @@ The app talks to a separate backend, [laravel-barangay-service-request-api](http
 
 - Keep commit messages clear and descriptive.
 - Avoid committing secrets, credentials, build output (`build/`), or IDE files.
-- Don't commit a personal `baseUrl` (e.g. your LAN IP) in `lib/core/api_service.dart` — leave the Windows default in place.
+- Don't hard-code your own API address (e.g. your LAN IP) in `lib/core/api_service.dart`. Pass it at run time with `--dart-define=API_BASE_URL=...` instead.
 - If you add or change behavior, update relevant documentation.
 - Run the analyzer and tests before opening a pull request:
   ```bash

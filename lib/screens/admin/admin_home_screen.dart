@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/request_provider.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
+import '../../core/ui_helpers.dart';
 import 'admin_users_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -15,10 +17,9 @@ class AdminHomeScreen extends StatefulWidget {
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _selectedIndex = 0;
 
-  // Color constants
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
+  /// Status filter on the Requests tab; the dashboard sets it when a
+  /// status tile is tapped.
+  final ValueNotifier<String> _requestFilter = ValueNotifier('all');
 
   @override
   void initState() {
@@ -31,22 +32,35 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final pages = [
-      const AdminDashboardPage(),
-      const AdminRequestsPage(),
-      const AdminUsersScreen(),
-      const AdminProfilePage(),
-    ];
+  void dispose() {
+    _requestFilter.dispose();
+    super.dispose();
+  }
 
+  void _openRequests(String status) {
+    _requestFilter.value = status;
+    setState(() => _selectedIndex = 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          AdminDashboardPage(onOpenRequests: _openRequests),
+          AdminRequestsPage(filter: _requestFilter),
+          const AdminUsersScreen(),
+          const AdminProfilePage(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: burntOrange,
-        unselectedItemColor: darkBrown.withOpacity(0.5),
+        backgroundColor: kWhite,
+        selectedItemColor: kBurntOrange,
+        unselectedItemColor: kDarkBrown.withOpacity(0.5),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Requests'),
@@ -59,113 +73,205 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 }
 
 class AdminDashboardPage extends StatelessWidget {
-  const AdminDashboardPage({super.key});
+  final void Function(String status) onOpenRequests;
 
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
+  const AdminDashboardPage({super.key, required this.onOpenRequests});
 
   @override
   Widget build(BuildContext context) {
-    final rp = Provider.of<RequestProvider>(context);
-    final auth = Provider.of<AuthProvider>(context);
-    final dashboard = rp.dashboard;
+    final rp = context.watch<RequestProvider>();
+    final user = context.watch<AuthProvider>().user;
+    final stats = rp.dashboard;
 
     return Scaffold(
-      backgroundColor: white,
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: Text(user?.isAdmin == true ? 'Admin Dashboard' : 'Staff Dashboard')),
       body: RefreshIndicator(
-        onRefresh: () async {
-          await rp.fetchDashboard();
-          await rp.fetchAdminRequests();
-        },
-        child: SingleChildScrollView(
+        color: kBurntOrange,
+        onRefresh: () => Future.wait([rp.fetchDashboard(), rp.fetchAdminRequests()]),
+        child: ListView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: burntOrange.withOpacity(0.1),
-                        child: Text(
-                          auth.user?.initials ?? 'A',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: burntOrange),
+          children: [
+            // Welcome
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: kBurntOrange.withOpacity(0.1),
+                          child: Text(
+                            user?.initials ?? 'A',
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kBurntOrange),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome, ${auth.user?.name ?? 'Admin'}',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
-                            ),
-                            Text(
-                              'Today: ${dashboard['today'] ?? 0} new requests',
-                              style: TextStyle(color: darkBrown.withOpacity(0.6)),
-                            ),
-                          ],
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Welcome,', style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
+                              Text(
+                                user?.name ?? 'Admin',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    Divider(height: 24, color: kDarkBrown.withOpacity(0.12)),
+                    Row(
+                      children: [
+                        _PeriodStat(label: 'Today', value: stats.today),
+                        _PeriodStat(label: 'This week', value: stats.thisWeek),
+                        _PeriodStat(label: 'This month', value: stats.thisMonth),
+                        _PeriodStat(label: 'All time', value: stats.total),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
+            ),
+            const SizedBox(height: 20),
 
-              // Stats Grid
-              Text(
-                'Overview',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
+            const Text(
+              'Requests by Status',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
+            ),
+            const SizedBox(height: 12),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 180,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                mainAxisExtent: 88,
               ),
-              const SizedBox(height: 12),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.4,
-                children: [
-                  _AdminStatCard(title: 'Total', value: '${dashboard['total'] ?? 0}', color: burntOrange),
-                  _AdminStatCard(title: 'Pending', value: '${dashboard['pending'] ?? 0}', color: Colors.orange),
-                  _AdminStatCard(title: 'In Review', value: '${dashboard['in_review'] ?? 0}', color: Colors.purple),
-                  _AdminStatCard(title: 'Completed', value: '${dashboard['completed'] ?? 0}', color: Colors.green),
-                ],
-              ),
-              const SizedBox(height: 24),
+              itemCount: kStaffSettableStatuses.length,
+              itemBuilder: (ctx, i) {
+                final status = kStaffSettableStatuses[i];
+                return _AdminStatCard(
+                  status: status,
+                  value: stats.countFor(status),
+                  onTap: () => onOpenRequests(status),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
 
-              // Recent Requests
-              Text(
-                'Recent Requests',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
-              ),
-              const SizedBox(height: 12),
-              if (rp.loading)
-                const Center(child: CircularProgressIndicator())
-              else if (rp.requests.isEmpty)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(child: Text('No requests', style: TextStyle(color: darkBrown))),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Recent Requests',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
+                ),
+                TextButton(
+                  onPressed: () => onOpenRequests('all'),
+                  style: TextButton.styleFrom(foregroundColor: kBurntOrange),
+                  child: const Text('See all'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            if (rp.loading && rp.requests.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (rp.requests.isEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Center(
+                    child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kDarkBrown)),
                   ),
-                )
-              else
-                ...rp.requests.take(10).map((req) => _AdminRequestCard(request: req)),
+                ),
+              )
+            else
+              ...rp.requests.take(8).map((req) => AdminRequestCard(request: req)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PeriodStat extends StatelessWidget {
+  final String label;
+  final int value;
+
+  const _PeriodStat({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text('$value', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kBurntOrange)),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.6)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminStatCard extends StatelessWidget {
+  final String status;
+  final int value;
+  final VoidCallback onTap;
+
+  const _AdminStatCard({required this.status, required this.value, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = statusColor(status);
+    return Card(
+      elevation: 1.5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: color.withOpacity(0.12),
+                child: Icon(statusIcon(status), size: 18, color: color),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('$value', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+                    Text(
+                      statusLabel(status),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.65)),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -174,208 +280,144 @@ class AdminDashboardPage extends StatelessWidget {
   }
 }
 
-class _AdminStatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final Color color;
+/// Request row for staff, with the requester's name. Tapping opens the
+/// details dialog, from which the status can be updated.
+class AdminRequestCard extends StatelessWidget {
+  final RequestModel request;
 
-  const _AdminStatCard({
-    required this.title,
-    required this.value,
-    required this.color,
-  });
-
-  static const Color darkBrown = Color(0xFF46291D);
+  const AdminRequestCard({super.key, required this.request});
 
   @override
   Widget build(BuildContext context) {
+    final color = statusColor(request.status);
     return Card(
-      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              value,
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color),
-            ),
-            const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: darkBrown.withOpacity(0.6))),
-          ],
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => showRequestDetails(context, request),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundColor: color.withOpacity(0.12),
+                child: Icon(statusIcon(request.status), color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: kDarkBrown, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${request.user?.name ?? 'Unknown'} · ${request.category?.name ?? 'General'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.65)),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${request.trackingCode} · ${formatRelative(request.createdAt)}',
+                      style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  StatusChip(status: request.status, fontSize: 10),
+                  if (request.priority == 'high' || request.priority == 'urgent') ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      priorityLabel(request.priority).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: priorityColor(request.priority),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _AdminRequestCard extends StatelessWidget {
-  final RequestModel request;
-
-  const _AdminRequestCard({required this.request});
-
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending': return Colors.orange;
-      case 'in_review': return Colors.purple;
-      case 'approved': return Colors.green;
-      case 'processing': return burntOrange;
-      case 'completed': return Colors.teal;
-      case 'rejected': return Colors.red;
-      default: return Colors.grey;
-    }
-  }
-
-  String _getStatusLabel(String status) {
-    switch (status) {
-      case 'in_review': return 'In Review';
-      default: return status[0].toUpperCase() + status.substring(1);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getStatusColor(request.status).withOpacity(0.1),
-          child: Icon(Icons.assignment, color: _getStatusColor(request.status)),
-        ),
-        title: Text(
-          request.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: darkBrown, fontWeight: FontWeight.w500),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(request.trackingCode, style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.6))),
-            Text('From: ${request.user?.name ?? 'Unknown'}', style: TextStyle(fontSize: 10, color: darkBrown.withOpacity(0.5))),
-            Text('Category: ${request.category?.name ?? 'Unknown'}', style: TextStyle(fontSize: 10, color: darkBrown.withOpacity(0.5))),
-          ],
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: _getStatusColor(request.status).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+void showRequestDetails(BuildContext context, RequestModel request) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(24, 16, 8, 0),
+      title: Row(
+        children: [
+          const Expanded(
+            child: Text('Request Details', style: TextStyle(color: kDarkBrown, fontWeight: FontWeight.bold)),
           ),
-          child: Text(
-            _getStatusLabel(request.status),
-            style: TextStyle(fontSize: 10, color: _getStatusColor(request.status), fontWeight: FontWeight.bold),
+          IconButton(
+            icon: const Icon(Icons.close, color: kDarkBrown),
+            onPressed: () => Navigator.pop(dialogContext),
           ),
-        ),
-        onTap: () {
-          _showRequestDetailsDialog(context, request);
-        },
+        ],
       ),
-    );
-  }
-
-  void _showRequestDetailsDialog(BuildContext context, RequestModel request) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Request Details',
-                style: TextStyle(color: darkBrown, fontWeight: FontWeight.bold),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.close, color: darkBrown),
-              onPressed: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
+      content: SizedBox(
+        width: 480,
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Tracking Code & Status
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(request.status).withOpacity(0.1),
+                  color: statusColor(request.status).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.qr_code, color: _getStatusColor(request.status)),
-                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Tracking Code',
-                            style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.6)),
-                          ),
-                          Text(
-                            request.trackingCode,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: darkBrown,
-                            ),
-                          ),
+                          Text('Tracking Code', style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.6))),
+                          Text(request.trackingCode,
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: kDarkBrown)),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(request.status).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _getStatusLabel(request.status),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: _getStatusColor(request.status),
-                        ),
-                      ),
-                    ),
+                    StatusChip(status: request.status, fontSize: 12),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Requester Info
-              _buildInfoSection(
+              _InfoSection(
                 icon: Icons.person,
                 title: 'Requested By',
                 content: request.user?.name ?? 'Unknown',
-                subtitle: request.user?.email ?? '',
+                subtitle: [request.user?.email, request.user?.phone]
+                    .where((v) => v != null && v.isNotEmpty)
+                    .join(' · '),
               ),
-              const SizedBox(height: 16),
-
-              // Title
-              _buildInfoSection(
-                icon: Icons.title,
-                title: 'Title',
-                content: request.title,
-              ),
-              const SizedBox(height: 16),
-
-              // Category & Priority
+              _InfoSection(icon: Icons.title, title: 'Title', content: request.title),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: _buildInfoSection(
+                    child: _InfoSection(
                       icon: Icons.category,
                       title: 'Category',
                       content: request.category?.name ?? 'Unknown',
@@ -383,353 +425,298 @@ class _AdminRequestCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildInfoSection(
-                      icon: Icons.priority_high,
+                    child: _InfoSection(
+                      icon: Icons.flag_outlined,
                       title: 'Priority',
-                      content: request.priority.toUpperCase(),
-                      contentColor: _getPriorityColor(request.priority),
+                      content: priorityLabel(request.priority),
+                      contentColor: priorityColor(request.priority),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // Description
-              _buildInfoSection(
+              _InfoSection(
                 icon: Icons.description,
                 title: 'Description',
                 content: request.description,
                 isLongText: true,
               ),
-              const SizedBox(height: 16),
-
-              // Submitted Date
-              _buildInfoSection(
+              _InfoSection(
                 icon: Icons.calendar_today,
                 title: 'Submitted',
-                content: _formatDate(request.createdAt),
+                content: formatDateTime(request.createdAt),
               ),
-
-              if (request.remarks != null && request.remarks!.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                _buildInfoSection(
+              if (request.remarks?.isNotEmpty ?? false)
+                _InfoSection(
                   icon: Icons.comment,
                   title: 'Remarks',
                   content: request.remarks!,
                   isLongText: true,
                 ),
-              ],
-
-              // Status History
-              if (request.logs.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                _buildHistorySection(request.logs),
-              ],
+              if (request.logs.isNotEmpty) _HistorySection(logs: request.logs),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
-            child: const Text('Close'),
-          ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          style: TextButton.styleFrom(foregroundColor: kDarkBrown),
+          child: const Text('Close'),
+        ),
+        if (request.canUpdateStatus)
           ElevatedButton.icon(
             onPressed: () {
-              Navigator.pop(ctx);
-              _showStatusDialog(context, request);
+              Navigator.pop(dialogContext);
+              showStatusDialog(context, request);
             },
             icon: const Icon(Icons.edit, size: 18),
             label: const Text('Update Status'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: burntOrange,
-              foregroundColor: white,
+          ),
+      ],
+    ),
+  );
+}
+
+Future<void> showStatusDialog(BuildContext context, RequestModel request) async {
+  // Look these up before any await: `context` may be gone by the time the
+  // request finishes, but the messenger and provider live above the routes.
+  final messenger = ScaffoldMessenger.of(context);
+  final requestProvider = context.read<RequestProvider>();
+
+  final result = await showDialog<(String, String)>(
+    context: context,
+    builder: (_) => _StatusDialog(request: request),
+  );
+  if (result == null) return;
+
+  final (status, remarks) = result;
+  final ok = await requestProvider.updateStatus(request.id, status, remarks: remarks);
+
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(
+      content: Text(ok
+          ? '${request.trackingCode} is now ${statusLabel(status)}'
+          : (requestProvider.error ?? 'Failed to update status')),
+      backgroundColor: ok ? Colors.green.shade700 : kBurntOrange,
+    ));
+}
+
+class _StatusDialog extends StatefulWidget {
+  final RequestModel request;
+
+  const _StatusDialog({required this.request});
+
+  @override
+  State<_StatusDialog> createState() => _StatusDialogState();
+}
+
+class _StatusDialogState extends State<_StatusDialog> {
+  late String _status = kStaffSettableStatuses.contains(widget.request.status) ? widget.request.status : 'pending';
+  late final TextEditingController _remarks = TextEditingController(text: widget.request.remarks ?? '');
+
+  @override
+  void dispose() {
+    // Disposed with the dialog's widget, after its closing animation.
+    _remarks.dispose();
+    super.dispose();
+  }
+
+  bool get _unchanged =>
+      _status == widget.request.status && _remarks.text.trim() == (widget.request.remarks ?? '').trim();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Update ${widget.request.trackingCode}', style: const TextStyle(color: kDarkBrown)),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<String>(
+                value: _status,
+                decoration: const InputDecoration(labelText: 'Status', border: OutlineInputBorder()),
+                items: kStaffSettableStatuses
+                    .map((s) => DropdownMenuItem(
+                          value: s,
+                          child: Row(
+                            children: [
+                              Icon(statusIcon(s), size: 18, color: statusColor(s)),
+                              const SizedBox(width: 8),
+                              Text(statusLabel(s), style: const TextStyle(color: kDarkBrown)),
+                            ],
+                          ),
+                        ))
+                    .toList(),
+                onChanged: (v) => setState(() => _status = v ?? _status),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _remarks,
+                onChanged: (_) => setState(() {}),
+                maxLength: 1000,
+                decoration: const InputDecoration(
+                  labelText: 'Remarks for the resident (optional)',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(),
+                ),
+                minLines: 2,
+                maxLines: 4,
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: kDarkBrown),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _unchanged ? null : () => Navigator.pop(context, (_status, _remarks.text.trim())),
+          child: const Text('Update'),
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoSection extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String content;
+  final String? subtitle;
+  final Color? contentColor;
+  final bool isLongText;
+
+  const _InfoSection({
+    required this.icon,
+    required this.title,
+    required this.content,
+    this.subtitle,
+    this.contentColor,
+    this.isLongText = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: kBurntOrange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 18, color: kBurntOrange),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.6))),
+                const SizedBox(height: 2),
+                Text(
+                  content,
+                  style: TextStyle(
+                    fontSize: isLongText ? 13 : 14,
+                    fontWeight: isLongText ? FontWeight.normal : FontWeight.w600,
+                    color: contentColor ?? kDarkBrown,
+                    height: isLongText ? 1.4 : null,
+                  ),
+                ),
+                if (subtitle != null && subtitle!.isNotEmpty)
+                  Text(subtitle!, style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.55))),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildInfoSection({
-    required IconData icon,
-    required String title,
-    required String content,
-    String? subtitle,
-    Color? contentColor,
-    bool isLongText = false,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: burntOrange.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 18, color: burntOrange),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.6)),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                content,
-                style: TextStyle(
-                  fontSize: isLongText ? 13 : 14,
-                  fontWeight: isLongText ? FontWeight.normal : FontWeight.w500,
-                  color: contentColor ?? darkBrown,
-                ),
-                maxLines: isLongText ? 10 : 2,
-                overflow: isLongText ? TextOverflow.visible : TextOverflow.ellipsis,
-              ),
-              if (subtitle != null)
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.5)),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+class _HistorySection extends StatelessWidget {
+  final List<StatusLog> logs;
 
-  Widget _buildHistorySection(List<StatusLog> logs) {
+  const _HistorySection({required this.logs});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: darkBrown.withOpacity(0.05),
+        color: kDarkBrown.withOpacity(0.04),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              Icon(Icons.history, size: 18, color: burntOrange),
-              const SizedBox(width: 8),
-              Text(
-                'Status History',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: darkBrown,
-                ),
-              ),
+              Icon(Icons.history, size: 18, color: kBurntOrange),
+              SizedBox(width: 8),
+              Text('Status History', style: TextStyle(fontWeight: FontWeight.bold, color: kDarkBrown)),
             ],
           ),
           const SizedBox(height: 12),
-          ...logs.map((log) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.only(top: 6),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(log.newStatus),
-                    shape: BoxShape.circle,
+          for (final log in logs)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.only(top: 5),
+                    decoration: BoxDecoration(color: statusColor(log.newStatus), shape: BoxShape.circle),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        log.newStatusLabel,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: _getStatusColor(log.newStatus),
-                          fontSize: 12,
-                        ),
-                      ),
-                      if (log.note != null && log.note!.isNotEmpty)
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          log.note!,
-                          style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.7)),
+                          log.newStatusLabel,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: statusColor(log.newStatus),
+                            fontSize: 12,
+                          ),
                         ),
-                      Text(
-                        _formatDate(log.createdAt),
-                        style: TextStyle(fontSize: 10, color: darkBrown.withOpacity(0.5)),
-                      ),
-                    ],
+                        if (log.note?.isNotEmpty ?? false)
+                          Text(log.note!, style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.75))),
+                        Text(
+                          [formatDateTime(log.createdAt), if (log.changer != null) log.changer!.name].join(' · '),
+                          style: TextStyle(fontSize: 10, color: kDarkBrown.withOpacity(0.5)),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
         ],
-      ),
-    );
-  }
-
-  Color _getPriorityColor(String priority) {
-    switch (priority) {
-      case 'low': return Colors.green;
-      case 'normal': return burntOrange;
-      case 'high': return Colors.orange;
-      case 'urgent': return Colors.red;
-      default: return Colors.grey;
-    }
-  }
-
-  String _formatDate(String dateStr) {
-    try {
-      final dt = DateTime.parse(dateStr);
-      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return dateStr;
-    }
-  }
-
-  void _showStatusDialog(BuildContext context, RequestModel request) {
-    String selectedStatus = request.status;
-    final remarksCtrl = TextEditingController(text: request.remarks ?? '');
-
-    // Store provider reference before showing dialog
-    final requestProvider = Provider.of<RequestProvider>(context, listen: false);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Update Status: ${request.trackingCode}', style: TextStyle(color: darkBrown)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  value: selectedStatus,
-                  decoration: InputDecoration(
-                    labelText: 'Status',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  items: ['pending', 'in_review', 'approved', 'processing', 'completed', 'rejected']
-                      .map((s) => DropdownMenuItem(
-                    value: s,
-                    child: Text(s.toUpperCase().replaceAll('_', ' '), style: TextStyle(color: darkBrown)),
-                  ))
-                      .toList(),
-                  onChanged: (v) => setState(() => selectedStatus = v!),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: remarksCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Remarks (optional)',
-                    labelStyle: TextStyle(color: darkBrown),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                  ),
-                  maxLines: 3,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  remarksCtrl.dispose();
-                  Navigator.pop(ctx);
-                },
-                style: TextButton.styleFrom(foregroundColor: darkBrown),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  // Close dialog first
-                  Navigator.pop(ctx);
-
-                  // Show loading indicator
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            ),
-                            SizedBox(width: 10),
-                            Text('Updating status...'),
-                          ],
-                        ),
-                        backgroundColor: burntOrange,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-
-                  // Use the stored provider reference
-                  final success = await requestProvider.updateStatus(
-                      request.id,
-                      selectedStatus,
-                      remarks: remarksCtrl.text.trim()
-                  );
-
-                  remarksCtrl.dispose();
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).clearSnackBars();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(success ? 'Status updated successfully' : 'Failed to update status'),
-                        backgroundColor: success ? Colors.green : burntOrange,
-                      ),
-                    );
-
-                    if (success) {
-                      await requestProvider.fetchAdminRequests();
-                      await requestProvider.fetchDashboard();
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: burntOrange,
-                  foregroundColor: white,
-                ),
-                child: const Text('Update'),
-              ),
-            ],
-          );
-        },
       ),
     );
   }
 }
 
 class AdminRequestsPage extends StatefulWidget {
-  const AdminRequestsPage({super.key});
+  final ValueNotifier<String> filter;
+
+  const AdminRequestsPage({super.key, required this.filter});
 
   @override
   State<AdminRequestsPage> createState() => _AdminRequestsPageState();
@@ -737,196 +724,146 @@ class AdminRequestsPage extends StatefulWidget {
 
 class _AdminRequestsPageState extends State<AdminRequestsPage> {
   String _searchQuery = '';
-  String _filterStatus = 'all';
   final TextEditingController _searchController = TextEditingController();
 
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
+  @override
+  void initState() {
+    super.initState();
+    widget.filter.addListener(_onFilterChanged);
+  }
 
   @override
   void dispose() {
+    widget.filter.removeListener(_onFilterChanged);
     _searchController.dispose();
     super.dispose();
   }
 
+  void _onFilterChanged() => setState(() {});
+
+  void _clearFilters() {
+    _searchController.clear();
+    setState(() => _searchQuery = '');
+    widget.filter.value = 'all';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final rp = Provider.of<RequestProvider>(context);
+    final rp = context.watch<RequestProvider>();
+    final status = widget.filter.value;
+    final query = _searchQuery.trim().toLowerCase();
 
-    // Filter requests based on search query and status
-    List<RequestModel> filteredRequests = rp.requests.where((request) {
-      // Filter by status
-      if (_filterStatus != 'all' && request.status != _filterStatus) {
-        return false;
-      }
-
-      // Filter by search query
-      if (_searchQuery.isNotEmpty) {
-        final query = _searchQuery.toLowerCase();
-        return request.title.toLowerCase().contains(query) ||
-            request.trackingCode.toLowerCase().contains(query) ||
-            request.user?.name?.toLowerCase().contains(query) == true ||
-            request.category?.name?.toLowerCase().contains(query) == true;
-      }
-
-      return true;
-    }).toList();
-
-    // Sort by date (newest first)
-    filteredRequests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final filtered = rp.requests.where((r) {
+      if (status != 'all' && r.status != status) return false;
+      if (query.isEmpty) return true;
+      return r.title.toLowerCase().contains(query) ||
+          r.trackingCode.toLowerCase().contains(query) ||
+          (r.user?.name.toLowerCase().contains(query) ?? false) ||
+          (r.category?.name.toLowerCase().contains(query) ?? false);
+    }).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
-      backgroundColor: white,
       appBar: AppBar(
         title: const Text('All Requests'),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-        elevation: 0,
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh),
-            onPressed: () => rp.fetchAdminRequests(),
+            onPressed: rp.fetchAdminRequests,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search Bar
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search by title, tracking code, requester, or category...',
-                    hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
-                    prefixIcon: Icon(Icons.search, color: burntOrange),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                      icon: Icon(Icons.clear, color: darkBrown),
-                      onPressed: () {
-                        setState(() {
-                          _searchQuery = '';
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search title, code, requester, category',
+                hintStyle: TextStyle(color: kDarkBrown.withOpacity(0.5)),
+                prefixIcon: const Icon(Icons.search, color: kBurntOrange),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: kDarkBrown),
+                        onPressed: () {
                           _searchController.clear();
-                        });
-                      },
-                    )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: darkBrown),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: burntOrange, width: 2),
-                    ),
-                    filled: true,
-                    fillColor: white,
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                isDense: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3)),
                 ),
-                const SizedBox(height: 12),
-                // Status Filter Chips
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterChip('All', 'all'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Pending', 'pending'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('In Review', 'in_review'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Approved', 'approved'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Processing', 'processing'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Completed', 'completed'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Rejected', 'rejected'),
-                    ],
-                  ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kBurntOrange, width: 2),
                 ),
+              ),
+              onChanged: (value) => setState(() => _searchQuery = value),
+            ),
+          ),
+          SizedBox(
+            height: 44,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                for (final s in ['all', ...kRequestStatuses])
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildFilterChip(s, rp.requests),
+                  ),
               ],
             ),
           ),
-          // Results Count
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 Text(
-                  '${filteredRequests.length} request(s) found',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: darkBrown.withOpacity(0.6),
-                  ),
+                  '${filtered.length} request${filtered.length == 1 ? '' : 's'}',
+                  style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
                 ),
                 const Spacer(),
-                if (_searchQuery.isNotEmpty || _filterStatus != 'all')
+                if (_searchQuery.isNotEmpty || status != 'all')
                   TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchQuery = '';
-                        _searchController.clear();
-                        _filterStatus = 'all';
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: burntOrange,
-                    ),
-                    child: const Text('Clear Filters'),
+                    onPressed: _clearFilters,
+                    style: TextButton.styleFrom(foregroundColor: kBurntOrange),
+                    child: const Text('Clear filters'),
                   ),
               ],
             ),
           ),
-          // Requests List
           Expanded(
-            child: rp.loading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredRequests.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.inbox,
-                    size: 64,
-                    color: darkBrown.withOpacity(0.3),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No requests found',
-                    style: TextStyle(color: darkBrown),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Try adjusting your search or filter',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: darkBrown.withOpacity(0.6),
-                    ),
-                  ),
-                ],
-              ),
-            )
-                : RefreshIndicator(
-              onRefresh: () => rp.fetchAdminRequests(),
-              child: ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: filteredRequests.length,
-                itemBuilder: (ctx, index) => _AdminRequestCard(request: filteredRequests[index]),
-              ),
+            child: RefreshIndicator(
+              color: kBurntOrange,
+              onRefresh: rp.fetchAdminRequests,
+              child: rp.loading && rp.requests.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : filtered.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 80),
+                            Icon(Icons.inbox, size: 64, color: kDarkBrown.withOpacity(0.3)),
+                            const SizedBox(height: 16),
+                            Text(
+                              rp.error ?? 'No requests found',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: kDarkBrown),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                          itemCount: filtered.length,
+                          itemBuilder: (ctx, index) => AdminRequestCard(request: filtered[index]),
+                        ),
             ),
           ),
         ],
@@ -934,42 +871,26 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
     );
   }
 
-  Widget _buildFilterChip(String label, String statusValue) {
-    final isSelected = _filterStatus == statusValue;
-    Color chipColor = burntOrange;
-
-    // Set color based on status
-    switch (statusValue) {
-      case 'pending': chipColor = Colors.orange; break;
-      case 'in_review': chipColor = Colors.purple; break;
-      case 'approved': chipColor = Colors.green; break;
-      case 'processing': chipColor = burntOrange; break;
-      case 'completed': chipColor = Colors.teal; break;
-      case 'rejected': chipColor = Colors.red; break;
-      default: chipColor = burntOrange;
-    }
+  Widget _buildFilterChip(String status, List<RequestModel> all) {
+    final isSelected = widget.filter.value == status;
+    final color = status == 'all' ? kBurntOrange : statusColor(status);
+    final count = status == 'all' ? all.length : all.where((r) => r.status == status).length;
 
     return FilterChip(
       label: Text(
-        label,
+        '${status == 'all' ? 'All' : statusLabel(status)} ($count)',
         style: TextStyle(
-          color: isSelected ? Colors.white : chipColor,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? kWhite : color,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         ),
       ),
       selected: isSelected,
-      onSelected: (selected) {
-        setState(() {
-          _filterStatus = statusValue;
-        });
-      },
-      backgroundColor: white,
-      selectedColor: chipColor,
-      side: BorderSide(
-        color: isSelected ? chipColor : darkBrown.withOpacity(0.3),
-        width: 1,
-      ),
-      shape: StadiumBorder(),
+      showCheckmark: false,
+      onSelected: (_) => widget.filter.value = status,
+      backgroundColor: kWhite,
+      selectedColor: color,
+      side: BorderSide(color: isSelected ? color : kDarkBrown.withOpacity(0.25)),
+      shape: const StadiumBorder(),
     );
   }
 }
@@ -977,104 +898,64 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
 class AdminProfilePage extends StatelessWidget {
   const AdminProfilePage({super.key});
 
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
-
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-    final user = auth.user;
+    final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
-      backgroundColor: white,
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: burntOrange.withOpacity(0.1),
-                child: Text(
-                  user?.initials ?? 'A',
-                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: burntOrange),
-                ),
+      appBar: AppBar(title: const Text('Profile')),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          const SizedBox(height: 24),
+          Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: kBurntOrange.withOpacity(0.1),
+              child: Text(
+                user?.initials ?? 'A',
+                style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: kBurntOrange),
               ),
-              const SizedBox(height: 24),
-              Text(
-                user?.name ?? 'Admin',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: darkBrown),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                user?.email ?? '',
-                style: TextStyle(color: darkBrown.withOpacity(0.6)),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: burntOrange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  user?.role.toUpperCase() ?? 'ADMIN',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: burntOrange),
-                ),
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text('Logout', style: TextStyle(color: darkBrown)),
-                        content: Text('Are you sure you want to logout?', style: TextStyle(color: darkBrown)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            style: TextButton.styleFrom(foregroundColor: darkBrown),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            style: TextButton.styleFrom(foregroundColor: burntOrange),
-                            child: const Text('Logout'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true && context.mounted) {
-                      await auth.logout();
-                      if (context.mounted) {
-                        Navigator.pushReplacementNamed(context, '/');
-                      }
-                    }
-                  },
-                  icon: Icon(Icons.logout, color: burntOrange),
-                  label: Text('Logout', style: TextStyle(color: burntOrange)),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(color: burntOrange),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 20),
+          Text(
+            user?.name ?? 'Admin',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: kDarkBrown),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            user?.email ?? '',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: kDarkBrown.withOpacity(0.6)),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: kBurntOrange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                (user?.roleLabel ?? 'Admin').toUpperCase(),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: kBurntOrange),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+          OutlinedButton.icon(
+            onPressed: () => confirmLogout(context),
+            icon: const Icon(Icons.logout, color: kBurntOrange),
+            label: const Text('Logout', style: TextStyle(color: kBurntOrange)),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              side: const BorderSide(color: kBurntOrange),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,43 +1,103 @@
 <p align="center">
-  <img src="assets/images/BSR_Logo_1.svg" width="400" alt="Barangay Service System Logo">
+  <img src="assets/images/BSR_Logo_1.svg" width="400" alt="Barangay Service Request logo">
 </p>
 
-## About
+<p align="center">
+  <img src="https://img.shields.io/badge/status-stable-2772BD?style=flat-square" alt="status">
+  <img src="https://img.shields.io/badge/Flutter-3.24%2B-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter">
+  <img src="https://img.shields.io/badge/Dart-3.5%2B-0175C2?style=flat-square&logo=dart&logoColor=white" alt="Dart">
+  <img src="https://img.shields.io/badge/backend-Laravel%20API-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel API">
+</p>
 
-The Barangay Service System mobile app allows residents to submit and track service requests, receive notifications, and communicate with barangay staff. Admin and staff users can manage requests and users through the app.
+<p align="center">
+  <a href="#quick-setup"><strong>Quick Setup</strong></a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="https://github.com/nncast/laravel-barangay-service-request-api">API Backend</a> ·
+  <a href="AUTHORS.md">Authors</a>
+</p>
 
-**Features:**
-- User authentication (Login/Register)
-- Role-based access (Resident, Staff, Admin)
-- Submit service requests
-- Track request status with history
-- Real-time notifications
-- Admin dashboard with statistics
-- User management (CRUD for admins)
-- Search and filter requests
+**Barangay Service System** is a Flutter mobile app for **Barangay Dubinan East**. Residents submit service requests (clearances, certificates, permits, complaints, blotter reports) and track them from submission to completion. Barangay staff and admins review requests, update their status with remarks, and manage user accounts.
+
+The app talks to the [Laravel API backend](https://github.com/nncast/laravel-barangay-service-request-api), which must be running for the app to work.
+
+## Screenshots
+
+**Residents**
+
+<p align="center">
+  <img src="docs/screenshots/login.png" width="200" alt="Login">
+  <img src="docs/screenshots/resident-dashboard.png" width="200" alt="Resident dashboard">
+  <img src="docs/screenshots/submit-request.png" width="200" alt="Submit a request">
+  <img src="docs/screenshots/my-requests.png" width="200" alt="My requests">
+  <img src="docs/screenshots/request-detail.png" width="200" alt="Request details">
+  <img src="docs/screenshots/notifications.png" width="200" alt="Notifications">
+</p>
+
+**Staff and admins**
+
+<p align="center">
+  <img src="docs/screenshots/admin-dashboard.png" width="200" alt="Admin dashboard">
+  <img src="docs/screenshots/admin-requests.png" width="200" alt="All requests">
+  <img src="docs/screenshots/admin-request-details.png" width="200" alt="Request details for staff">
+  <img src="docs/screenshots/admin-users.png" width="200" alt="Manage users">
+</p>
+
+## Features
+
+**Residents**
+- Register and log in
+- Submit a request: pick a service, add a title, description and priority
+- Track each request through **Pending → In Review → Approved → Processing → Completed** (or Rejected), with staff remarks and a dated status history
+- Cancel a request while it is still pending
+- Notifications whenever staff update a request; tap one to open the request
+
+**Staff and admins**
+- Dashboard with counts for every status, plus today / this week / this month
+- All requests with search and status filters
+- Update a request's status and leave remarks for the resident
+- View users (staff) or add, edit, deactivate and delete users (admin)
+
+## Roles
+
+| Feature | Resident | Staff | Admin |
+| --- | :---: | :---: | :---: |
+| Submit, track and cancel own requests | ✓ | | |
+| Notifications | ✓ | | |
+| View all requests, update status | | ✓ | ✓ |
+| Dashboard statistics | | ✓ | ✓ |
+| View users | | ✓ | ✓ |
+| Add, edit, deactivate and delete users | | | ✓ |
 
 ## Tech Stack
 
-- Flutter 3.x
-- Dart
-- Provider (State Management)
-- HTTP (API calls)
-- Shared Preferences (Local storage)
-- URL Launcher
+| Category | Details |
+| --- | --- |
+| Framework | Flutter 3.24 or later (Dart 3.5+) |
+| State management | Provider |
+| Networking | `http`, token auth (Laravel Sanctum) |
+| Local storage | `shared_preferences` (session token) |
+| Other packages | `url_launcher`, `intl` |
+| Platforms | Android, Windows, web (iOS and macOS untested) |
 
 ## Quick Setup
 
 ### 1. Prerequisites
 
-- Flutter SDK installed
-- Android Studio / VS Code
-- Laragon (for API backend)
-- API running at `http://localhost:8000`
+| Tool | Download |
+| --- | --- |
+| Flutter SDK 3.24 or later | [flutter.dev](https://docs.flutter.dev/get-started/install) |
+| Android Studio or VS Code | [Android Studio](https://developer.android.com/studio) · [VS Code](https://code.visualstudio.com/) |
+| The API backend, running | [laravel-barangay-service-request-api](https://github.com/nncast/laravel-barangay-service-request-api#quick-setup) |
+
+Set up and start the API first (`php artisan serve`). You should see:
+
+```
+INFO  Server running on [http://127.0.0.1:8000].
+```
 
 ### 2. Clone the repository
 
 ```bash
-cd C:\laragon\www
 git clone https://github.com/nncast/flutter-barangay-service-request-app.git
 cd flutter-barangay-service-request-app
 ```
@@ -48,81 +108,34 @@ cd flutter-barangay-service-request-app
 flutter pub get
 ```
 
-### 4. Configure API URL
+### 4. Run the app
 
-Open `lib/core/api_service.dart` and update:
-```dart
-// Use only ONE baseUrl depending on your platform
+The app picks the API address for you:
 
-// OPTION 1: For Android Emulator
-// static const String baseUrl = 'http://10.0.2.2:8000/api';
-
-// OPTION 2: For Windows Desktop (default)
-static const String baseUrl = 'http://localhost:8000/api';
-
-// OPTION 3: For Physical Device (find your IP using 'ipconfig')
-// static const String baseUrl = 'http://192.168.1.100:8000/api';
-
-```
-
-> **Note:** Windows URL is set as default. Change only if using emulator or physical device.
-
-### 5. Run the app
-
-Before running Flutter, make sure your Laravel API is already running:
-
-```bash
-php artisan serve
-```
-
-You should see something like:
-```
-INFO  Server running on [http://127.0.0.1:8000].  
-```
-
-Then run the Flutter app:
+| Where the app runs | API address used |
+| --- | --- |
+| Android emulator | `http://10.0.2.2:8000/api` (the emulator's alias for your computer) |
+| Windows, macOS, Linux, web | `http://localhost:8000/api` |
 
 ```bash
 flutter run
 ```
 
+**On a physical phone**, the phone must reach your computer over Wi-Fi. Find your computer's IP address (`ipconfig` on Windows), start the API so it listens on the network, and pass that address to the app:
 
----
+```bash
+# in the API folder
+php artisan serve --host=0.0.0.0 --port=8000
 
-## Project Structure
-
-```
-lib/
-├── core/
-│   ├── api_service.dart
-│   └── models.dart
-├── providers/
-│   ├── auth_provider.dart
-│   ├── request_provider.dart
-│   └── user_provider.dart
-├── screens/
-│   ├── auth/
-│   │   ├── login_screen.dart
-│   │   └── register_screen.dart
-│   ├── admin/
-│   │   ├── admin_home_screen.dart
-│   │   └── admin_users_screen.dart
-│   ├── home/
-│   │   └── home_screen.dart
-│   ├── requests/
-│   │   ├── my_requests_screen.dart
-│   │   ├── request_detail_screen.dart
-│   │   └── submit_request_screen.dart
-│   ├── notifications/
-│   │   └── notifications_screen.dart
-│   └── profile/
-│       └── profile_screen.dart
-└── main.dart
+# in the app folder
+flutter run --dart-define=API_BASE_URL=http://192.168.1.100:8000/api
 ```
 
----
+Use the same `--dart-define` with `flutter build apk` to build an APK that connects to your server.
 
 ## Demo Accounts
+
+These are created by the API's seeder (`php artisan migrate --seed`).
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -130,48 +143,64 @@ lib/
 | Staff | staff@barangay.gov.ph | Staff1234 |
 | Resident | maria@example.com | User1234 |
 
----
+New residents can also register from the app (passwords need at least 8 characters).
 
-## Screens
+## Project Structure
 
-### Resident
-- Dashboard with stats and categories
-- Submit new requests
-- My requests with status filters
-- Request details with history
-- Notifications
-- Profile
+```
+lib/
+├── core/
+│   ├── api_service.dart        API base URL, HTTP helpers, error messages
+│   ├── models.dart             User, category, request, status log, notification, dashboard
+│   ├── session.dart            Login routing, logout, snackbars
+│   └── ui_helpers.dart         Brand colors, status labels/colors/icons, date formatting
+├── providers/
+│   ├── auth_provider.dart      Login, registration, session restore
+│   ├── request_provider.dart   Requests, categories, notifications, dashboard
+│   └── user_provider.dart      User management (admin)
+├── screens/
+│   ├── auth/                   Login, register
+│   ├── home/                   Resident dashboard and tabs
+│   ├── requests/               My requests, request details, submit request
+│   ├── notifications/          Resident notifications
+│   ├── profile/                Profile, help, about
+│   └── admin/                  Staff/admin dashboard, all requests, users
+└── main.dart                   App theme, routes, splash screen
+```
 
-### Admin/Staff
-- Dashboard with statistics
-- All requests (search & filter)
-- Update request status with remarks
-- User management (CRUD)
-- Profile
+## Running tests
 
----
+```bash
+flutter analyze
+flutter test
+```
 
 ## Common Issues
 
-**API connection refused?**
-- Ensure API is running: `php artisan serve`
-- Check baseUrl in `api_service.dart` (default is Windows URL)
+**"Unable to connect to the server"**
+- Make sure the API is running: `php artisan serve` in the API folder.
+- On a physical phone, use `--dart-define=API_BASE_URL=...` with your computer's IP and start the API with `--host=0.0.0.0` (see [Run the app](#4-run-the-app)). The phone and computer must be on the same Wi-Fi.
+- Windows Firewall may block port 8000 the first time; allow PHP through when prompted.
 
-**Build errors?**
+**"This account has been deactivated"**
+An admin turned the account off. Ask an admin to reactivate it from **Users → Edit → Active**.
+
+**Build errors**
 ```bash
 flutter clean
 flutter pub get
 flutter run
 ```
 
-**Emulator not showing?**
+**Emulator not showing**
 ```bash
-flutter emulators --launch Pixel_6_API_33
+flutter emulators
+flutter emulators --launch <emulator_id>
 ```
 
 ## Contributing
 
-Contributions are welcome. Fork the repository, work on a branch from `main`, and open a pull request describing what changed and why. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and code style.
+Contributions are welcome. Fork the repository, work on a branch from `main`, and open a pull request describing what changed and why. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and code style, and [AUTHORS.md](AUTHORS.md) for the people who built it.
 
 ## Security
 
@@ -181,3 +210,7 @@ Please don't report vulnerabilities in public issues. Use the repository's **Sec
 
 - Flutter App: [flutter-barangay-service-request-app](https://github.com/nncast/flutter-barangay-service-request-app)
 - API Backend: [laravel-barangay-service-request-api](https://github.com/nncast/laravel-barangay-service-request-api)
+
+---
+
+*Barangay Service System · Flutter · Provider · Laravel API*

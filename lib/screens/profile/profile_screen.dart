@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/session.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -10,6 +11,10 @@ class ProfileScreen extends StatelessWidget {
   static const Color creamGold = Color(0xFFFAD793);
   static const Color burntOrange = Color(0xFFBE5633);
   static const Color darkBrown = Color(0xFF46291D);
+
+  static const String _hallEmail = 'DubinanEast.BarangayHall@santiagocity.gov.ph';
+
+  static String _orNotSet(String? value) => (value == null || value.trim().isEmpty) ? 'Not set' : value;
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +78,8 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _infoTile(Icons.email, 'Email', user?.email ?? 'Not set'),
-                  _infoTile(Icons.phone, 'Phone', user?.phone ?? 'Not set'),
-                  _infoTile(Icons.home, 'Address', user?.address ?? 'Not set'),
+                  _infoTile(Icons.phone, 'Phone', _orNotSet(user?.phone)),
+                  _infoTile(Icons.home, 'Address', _orNotSet(user?.address)),
                   const Divider(height: 32, color: darkBrown),
                   Text(
                     'Account Settings',
@@ -91,33 +96,7 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: Text('Logout', style: TextStyle(color: darkBrown)),
-                            content: Text('Are you sure you want to logout?', style: TextStyle(color: darkBrown)),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                style: TextButton.styleFrom(foregroundColor: darkBrown),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                style: TextButton.styleFrom(foregroundColor: burntOrange),
-                                child: const Text('Logout'),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirm == true && context.mounted) {
-                          await auth.logout();
-                          if (context.mounted) {
-                            Navigator.pushReplacementNamed(context, '/');
-                          }
-                        }
-                      },
+                      onPressed: () => confirmLogout(context),
                       icon: Icon(Icons.logout, color: burntOrange),
                       label: Text('Logout', style: TextStyle(color: burntOrange)),
                       style: OutlinedButton.styleFrom(
@@ -217,7 +196,8 @@ class ProfileScreen extends StatelessWidget {
             ),
           ],
         ),
-        content: Column(
+        content: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Divider(color: darkBrown),
@@ -326,6 +306,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
         actions: [
           TextButton(
@@ -453,7 +434,8 @@ class ProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text('Barangay Hall', style: TextStyle(color: darkBrown)),
-        content: Column(
+        content: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -477,9 +459,9 @@ class ProfileScreen extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.email, color: burntOrange),
               title: Text('Email', style: TextStyle(color: darkBrown)),
-              subtitle: const Text('Santiago.DubinanEast@barangay.gov.ph'),
+              subtitle: const Text(_hallEmail),
               onTap: () {
-                _launchUrl(Uri.parse('mailto:DubinanEast.BarangayHall@santiagocity.gov.ph'));
+                _launchUrl(Uri(scheme: 'mailto', path: _hallEmail));
               },
             ),
             ListTile(
@@ -488,6 +470,7 @@ class ProfileScreen extends StatelessWidget {
               subtitle: const Text('Monday - Friday: 8:00 AM - 5:00 PM'),
             ),
           ],
+        ),
         ),
         actions: [
           TextButton(
@@ -645,7 +628,7 @@ class ProfileScreen extends StatelessWidget {
   void _showReportIssueDialog(BuildContext context) {
     final issueController = TextEditingController();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: white,
@@ -689,21 +672,24 @@ class ProfileScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               final issue = issueController.text.trim();
-              if (issue.isNotEmpty) {
-                final emailUri = Uri.parse(
-                  'mailto:support@barangay.gov.ph?subject=App Issue Report&body=${Uri.encodeComponent(issue)}',
-                );
-                _launchUrl(emailUri);
-              }
+              if (issue.isEmpty) return;
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Thank you for your report. We will look into it.'),
-                  backgroundColor: burntOrange,
-                ),
-              );
+              final opened = await _launchUrl(Uri(
+                scheme: 'mailto',
+                path: _hallEmail,
+                query: 'subject=${Uri.encodeComponent('App Issue Report')}&body=${Uri.encodeComponent(issue)}',
+              ));
+              if (context.mounted) {
+                showMessage(
+                  context,
+                  opened
+                      ? 'Your email app has opened with the report. Send it to finish.'
+                      : 'No email app found. Please email $_hallEmail directly.',
+                  success: opened,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: burntOrange,
@@ -719,15 +705,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _launchUrl(Uri url) async {
+  // launchUrl is called directly: canLaunchUrl wrongly reports false on
+  // Android 11+ unless every scheme is declared in the manifest.
+  Future<bool> _launchUrl(Uri url) async {
     try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url);
-      } else {
-        debugPrint('Could not launch $url');
-      }
+      return await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (e) {
       debugPrint('Error launching URL: $e');
+      return false;
     }
   }
 }

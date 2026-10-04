@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/session.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
 
@@ -29,26 +30,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
-
     final auth = context.read<AuthProvider>();
+    if (auth.loading || !_formKey.currentState!.validate()) return;
+
     final ok = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
 
     if (!mounted) return;
 
     if (ok) {
-      if (auth.isStaff) {
-        Navigator.pushReplacementNamed(context, '/admin');
-      } else {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      goToHome(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error ?? 'Login failed'),
-          backgroundColor: burntOrange,
-        ),
-      );
+      showMessage(context, auth.error ?? 'Login failed');
     }
   }
 
@@ -77,6 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.email],
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: TextStyle(color: darkBrown),
@@ -91,12 +86,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderSide: BorderSide(color: burntOrange, width: 2),
                       ),
                     ),
-                    validator: (v) => v!.isEmpty ? 'Enter email' : null,
+                    validator: (v) => (v ?? '').trim().isEmpty ? 'Enter email' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passCtrl,
                     obscureText: _obscure,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.password],
+                    onFieldSubmitted: (_) => _login(),
                     decoration: InputDecoration(
                       labelText: 'Password',
                       labelStyle: TextStyle(color: darkBrown),
@@ -115,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderSide: BorderSide(color: burntOrange, width: 2),
                       ),
                     ),
-                    validator: (v) => v!.isEmpty ? 'Enter password' : null,
+                    validator: (v) => (v ?? '').isEmpty ? 'Enter password' : null,
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
@@ -142,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () {
+                      auth.clearError();
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const RegisterScreen()),

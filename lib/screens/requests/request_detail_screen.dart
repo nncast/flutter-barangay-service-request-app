@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/request_provider.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
+import '../../core/ui_helpers.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final int requestId;
@@ -13,13 +15,8 @@ class RequestDetailScreen extends StatefulWidget {
 
 class _RequestDetailScreenState extends State<RequestDetailScreen> {
   RequestModel? _request;
+  String? _error;
   bool _loading = true;
-
-  // Color constants based on your scheme
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color creamGold = Color(0xFFFAD793);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
 
   @override
   void initState() {
@@ -30,28 +27,15 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   Future<void> _loadRequest() async {
     final rp = context.read<RequestProvider>();
     final req = await rp.fetchRequest(widget.requestId);
-    if (mounted) {
-      setState(() {
-        _request = req;
-        _loading = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _request = req;
+      _error = req == null ? (rp.error ?? 'Request not found') : null;
+      _loading = false;
+    });
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending': return Colors.orange;
-      case 'in_review': return burntOrange;
-      case 'approved': return Colors.green;
-      case 'processing': return Colors.purple;
-      case 'completed': return Colors.teal;
-      case 'rejected': return Colors.red;
-      case 'cancelled': return Colors.grey;
-      default: return Colors.grey;
-    }
-  }
-
-  String _getStatusMessage(String status) {
+  String _statusMessage(String status) {
     switch (status) {
       case 'pending':
         return 'Your request has been submitted and is waiting to be reviewed.';
@@ -66,346 +50,184 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       case 'rejected':
         return 'We regret to inform you that your request has been rejected.';
       case 'cancelled':
-        return 'This request has been cancelled.';
+        return 'You cancelled this request.';
       default:
         return '';
     }
   }
 
-  bool _canCancel(String status) {
-    return status == 'pending';
-  }
-
   Future<void> _cancelRequest() async {
+    final request = _request!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: white,
-        title: Text('Cancel Request', style: TextStyle(color: darkBrown)),
+        title: const Text('Cancel Request', style: TextStyle(color: kDarkBrown)),
         content: Text(
-          'Are you sure you want to cancel "${_request?.title}"?',
-          style: TextStyle(color: darkBrown),
+          'Are you sure you want to cancel "${request.title}"? This can\'t be undone.',
+          style: const TextStyle(color: kDarkBrown),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            style: TextButton.styleFrom(foregroundColor: darkBrown),
-            child: const Text('No'),
+            style: TextButton.styleFrom(foregroundColor: kDarkBrown),
+            child: const Text('Keep Request'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: burntOrange),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Yes, Cancel'),
           ),
         ],
       ),
     );
+    if (confirm != true || !mounted) return;
 
-    if (confirm == true && context.mounted) {
-      final rp = context.read<RequestProvider>();
-      final ok = await rp.cancelRequest(_request!.id);
-      if (context.mounted) {
-        if (ok) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Request cancelled successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context, true);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to cancel request'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+    final rp = context.read<RequestProvider>();
+    final ok = await rp.cancelRequest(request.id);
+    if (!mounted) return;
+
+    if (ok) {
+      showMessage(context, 'Request cancelled', success: true);
+      Navigator.pop(context, true);
+    } else {
+      showMessage(context, rp.error ?? 'Failed to cancel request');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final req = _request;
+
+    if (_loading || req == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Request')),
+        body: Center(
+          child: _loading
+              ? const CircularProgressIndicator()
+              : Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.search_off, size: 56, color: kDarkBrown.withOpacity(0.3)),
+                      const SizedBox(height: 12),
+                      Text(_error ?? 'Request not found', style: const TextStyle(color: kDarkBrown)),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          setState(() => _loading = true);
+                          _loadRequest();
+                        },
+                        style: TextButton.styleFrom(foregroundColor: kBurntOrange),
+                        child: const Text('Try again'),
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+      );
     }
 
-    if (_request == null) {
-      return const Scaffold(body: Center(child: Text('Request not found')));
-    }
-
-    final req = _request!;
-    final canCancel = _canCancel(req.status);
+    final color = statusColor(req.status);
+    final cancelling = context.select<RequestProvider, bool>((rp) => rp.submitting);
 
     return Scaffold(
-      backgroundColor: white,
-      appBar: AppBar(
-        title: Text(req.trackingCode, style: const TextStyle(color: white)),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-        elevation: 0,
-        actions: [
-          // Cancel button - only for pending requests
-          if (canCancel)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ElevatedButton.icon(
-                onPressed: _cancelRequest,
-                icon: const Icon(Icons.cancel_outlined, size: 18),
-                label: const Text('Cancel Request'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: darkBrown,
-                  foregroundColor: creamGold,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+      appBar: AppBar(title: Text(req.trackingCode)),
+      bottomNavigationBar: req.canCancel
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: OutlinedButton.icon(
+                  onPressed: cancelling ? null : _cancelRequest,
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text('Cancel Request'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+            )
+          : null,
+      body: RefreshIndicator(
+        color: kBurntOrange,
+        onRefresh: _loadRequest,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
             // Status Card
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            _SectionCard(
+              title: 'Current Status',
+              dotColor: color,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(req.status),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Current Status',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: darkBrown,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(color: darkBrown),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(req.status).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            req.status.toUpperCase(),
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _getStatusColor(req.status),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _getStatusMessage(req.status),
-                      style: TextStyle(color: darkBrown.withOpacity(0.7), fontSize: 14, height: 1.4),
-                    ),
-                    if (req.remarks != null && req.remarks!.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: creamGold.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: creamGold),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Remarks:',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                                color: darkBrown,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              req.remarks!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: darkBrown,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    Icon(statusIcon(req.status), color: color),
+                    const SizedBox(width: 8),
+                    StatusChip(status: req.status, fontSize: 13),
                   ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                Text(
+                  _statusMessage(req.status),
+                  style: TextStyle(color: kDarkBrown.withOpacity(0.75), fontSize: 14, height: 1.4),
+                ),
+                if (req.remarks?.isNotEmpty ?? false) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: kCreamGold.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: kCreamGold),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Remarks from the barangay',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: kDarkBrown),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(req.remarks!, style: const TextStyle(fontSize: 13, color: kDarkBrown)),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 16),
 
             // Details Card
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: burntOrange,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Request Details',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: darkBrown,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(color: darkBrown),
-                    const SizedBox(height: 8),
-                    _detailRow('Title', req.title),
-                    _detailRow('Category', req.category?.name ?? '-'),
-                    _detailRow('Priority', req.priority.toUpperCase()),
-                    _detailRow('Submitted', _formatDate(req.createdAt)),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Description',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: darkBrown.withOpacity(0.7),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      req.description,
-                      style: TextStyle(color: darkBrown, height: 1.4),
-                    ),
-                  ],
+            _SectionCard(
+              title: 'Request Details',
+              children: [
+                _detailRow('Title', req.title),
+                _detailRow('Category', req.category?.name ?? '-'),
+                _detailRow('Priority', priorityLabel(req.priority), valueColor: priorityColor(req.priority)),
+                _detailRow('Submitted', formatDateTime(req.createdAt)),
+                if (req.completedAt != null) _detailRow('Completed', formatDateTime(req.completedAt!)),
+                const SizedBox(height: 4),
+                Text(
+                  'Description',
+                  style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withOpacity(0.6)),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(req.description, style: const TextStyle(color: kDarkBrown, height: 1.4)),
+              ],
             ),
             const SizedBox(height: 16),
 
             // Status History Card
             if (req.logs.isNotEmpty)
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: burntOrange,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Status History',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: darkBrown,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(color: darkBrown),
-                      const SizedBox(height: 8),
-                      ...req.logs.map((log) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              margin: const EdgeInsets.only(top: 6),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(log.newStatus),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    log.newStatus.toUpperCase(),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: _getStatusColor(log.newStatus),
-                                    ),
-                                  ),
-                                  if (log.note != null && log.note!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 2),
-                                      child: Text(
-                                        log.note!,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: darkBrown.withOpacity(0.6),
-                                        ),
-                                      ),
-                                    ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: Text(
-                                      _formatDate(log.createdAt),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: darkBrown.withOpacity(0.5),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
-                    ],
-                  ),
-                ),
+              _SectionCard(
+                title: 'Status History',
+                children: [
+                  for (final log in req.logs) _HistoryEntry(log: log),
+                ],
               ),
           ],
         ),
@@ -413,39 +235,118 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
   }
 
-  Widget _detailRow(String label, String value) {
+  Widget _detailRow(String label, String value, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 90,
             child: Text(
               label,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: darkBrown.withOpacity(0.6),
-              ),
+              style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withOpacity(0.6)),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: darkBrown),
+              style: TextStyle(
+                color: valueColor ?? kDarkBrown,
+                fontWeight: valueColor != null ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  String _formatDate(String dateStr) {
-    try {
-      final dt = DateTime.parse(dateStr);
-      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return dateStr;
-    }
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final Color dotColor;
+  final List<Widget> children;
+
+  const _SectionCard({required this.title, this.dotColor = kBurntOrange, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kDarkBrown),
+                ),
+              ],
+            ),
+            Divider(height: 24, color: kDarkBrown.withOpacity(0.15)),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HistoryEntry extends StatelessWidget {
+  final StatusLog log;
+
+  const _HistoryEntry({required this.log});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = statusColor(log.newStatus);
+    final by = log.changer?.name;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(log.newStatusLabel, style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+                if (log.note?.isNotEmpty ?? false)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(log.note!, style: TextStyle(fontSize: 13, color: kDarkBrown.withOpacity(0.75))),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    by != null ? '${formatDateTime(log.createdAt)} · $by' : formatDateTime(log.createdAt),
+                    style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

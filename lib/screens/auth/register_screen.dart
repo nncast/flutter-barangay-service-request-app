@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/session.dart';
 import '../../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -18,7 +19,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscure = true;
-  bool _isEmailValid = true;
 
   // Color constants
   static const Color white = Color(0xFFFFFFFF);
@@ -37,11 +37,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
-
     final auth = context.read<AuthProvider>();
+    if (auth.loading || !_formKey.currentState!.validate()) return;
 
-    // Register using 'name' field (not 'full_name')
     final ok = await auth.register({
       'name': _nameCtrl.text.trim(),
       'email': _emailCtrl.text.trim(),
@@ -54,45 +52,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (ok) {
-      Navigator.pushReplacementNamed(context, '/home');
+      goToHome(context);
     } else {
-      String errorMessage = auth.error ?? 'Registration failed';
-
-      // Check if error is about duplicate email
-      if (errorMessage.toLowerCase().contains('email') &&
-          (errorMessage.toLowerCase().contains('already') ||
-              errorMessage.toLowerCase().contains('taken') ||
-              errorMessage.toLowerCase().contains('unique'))) {
-        errorMessage = 'This email is already registered. Please use a different email or login.';
-        _setEmailError(true);
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: burntOrange,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      showMessage(context, auth.error ?? 'Registration failed');
     }
-  }
-
-  void _setEmailError(bool hasError) {
-    setState(() {
-      _isEmailValid = !hasError;
-    });
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      _setEmailError(false);
-      return 'Enter email';
-    }
-    if (!value.contains('@') || !value.contains('.')) {
-      _setEmailError(false);
+    final email = (value ?? '').trim();
+    if (email.isEmpty) return 'Enter email';
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       return 'Enter a valid email address';
     }
-    _setEmailError(false);
     return null;
   }
 
@@ -144,7 +115,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     borderSide: BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
-                validator: (v) => v!.isEmpty ? 'Enter your name' : null,
+                textCapitalization: TextCapitalization.words,
+                validator: (v) => (v ?? '').trim().isEmpty ? 'Enter your name' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -162,16 +134,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: burntOrange, width: 2),
                   ),
-                  errorText: !_isEmailValid ? null : null,
                 ),
+                keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
-                onChanged: (value) {
-                  _setEmailError(false);
-                },
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: 'Phone (optional)',
                   labelStyle: TextStyle(color: darkBrown),
@@ -228,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     borderSide: BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
-                validator: (v) => v!.length < 6 ? 'Password must be at least 6 characters' : null,
+                validator: (v) => (v ?? '').length < 8 ? 'Password must be at least 8 characters' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(

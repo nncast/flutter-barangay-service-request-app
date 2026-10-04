@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/request_provider.dart';
 import '../../core/models.dart';
+import '../../core/ui_helpers.dart';
 import '../requests/my_requests_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
@@ -19,11 +20,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // Color constants
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
-
   @override
   void initState() {
     super.initState();
@@ -35,32 +31,37 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _selectTab(int index) => setState(() => _selectedIndex = index);
+
   @override
   Widget build(BuildContext context) {
-    final rp = context.watch<RequestProvider>();
-
-    final pages = [
-      const DashboardPage(),
-      const MyRequestsScreen(),
-      const NotificationsScreen(),
-      const ProfileScreen(),
-    ];
+    final unread = context.select<RequestProvider, int>((rp) => rp.unreadCount);
 
     return Scaffold(
-      body: pages[_selectedIndex],
+      // IndexedStack keeps each tab's scroll position and filters.
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          DashboardPage(onSeeAll: () => _selectTab(1)),
+          const MyRequestsScreen(),
+          const NotificationsScreen(),
+          const ProfileScreen(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
+        onTap: _selectTab,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: burntOrange,
-        unselectedItemColor: darkBrown.withOpacity(0.5),
+        backgroundColor: kWhite,
+        selectedItemColor: kBurntOrange,
+        unselectedItemColor: kDarkBrown.withOpacity(0.5),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           const BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'My Requests'),
           BottomNavigationBarItem(
             icon: Badge(
-              label: Text('${rp.unreadCount}'),
-              isLabelVisible: rp.unreadCount > 0,
+              label: Text('$unread'),
+              isLabelVisible: unread > 0,
               child: const Icon(Icons.notifications),
             ),
             label: 'Alerts',
@@ -73,211 +74,186 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final VoidCallback? onSeeAll;
 
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
+  const DashboardPage({super.key, this.onSeeAll});
+
+  Future<void> _openSubmit(BuildContext context, [CategoryModel? category]) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => SubmitRequestScreen(preSelectedCategory: category)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-    final rp = Provider.of<RequestProvider>(context);
-    final user = auth.user;
+    final user = context.watch<AuthProvider>().user;
+    final rp = context.watch<RequestProvider>();
+    final requests = rp.requests;
+    final active = requests.where((r) => !['completed', 'rejected', 'cancelled'].contains(r.status)).length;
 
     return Scaffold(
-      backgroundColor: white,
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        backgroundColor: burntOrange,
-        foregroundColor: white,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Dashboard')),
       body: RefreshIndicator(
-        onRefresh: () async {
-          await rp.fetchRequests();
-          await rp.fetchNotifications();
-        },
-        child: SingleChildScrollView(
+        color: kBurntOrange,
+        onRefresh: () => Future.wait([
+          rp.fetchRequests(),
+          rp.fetchNotifications(),
+          if (rp.categories.isEmpty) rp.fetchCategories(),
+        ]),
+        child: ListView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Card
+          children: [
+            // Welcome Card
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: kBurntOrange.withOpacity(0.1),
+                      child: Text(
+                        user?.initials ?? 'U',
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: kBurntOrange),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Welcome,', style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
+                          Text(
+                            user?.name ?? 'Resident',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Quick Stats
+            Row(
+              children: [
+                Expanded(child: _StatCard(title: 'Total', value: requests.length, color: kBurntOrange)),
+                const SizedBox(width: 12),
+                Expanded(child: _StatCard(title: 'Active', value: active, color: statusColor('in_review'))),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    title: 'Completed',
+                    value: requests.where((r) => r.status == 'completed').length,
+                    color: statusColor('completed'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Submit Request Button
+            ElevatedButton.icon(
+              onPressed: () => _openSubmit(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Submit New Request'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Categories
+            const Text(
+              'Available Services',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
+            ),
+            const SizedBox(height: 12),
+            if (rp.categories.isEmpty && rp.categoriesFailed)
+              _RetryCard(
+                message: 'Couldn\'t load services.',
+                onRetry: rp.fetchCategories,
+              )
+            else if (rp.categories.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 220,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  mainAxisExtent: 110,
+                ),
+                itemCount: rp.categories.length,
+                itemBuilder: (ctx, i) {
+                  final cat = rp.categories[i];
+                  return _CategoryCard(category: cat, onTap: () => _openSubmit(context, cat));
+                },
+              ),
+            const SizedBox(height: 24),
+
+            // Recent Requests
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Recent Requests',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
+                ),
+                if (requests.isNotEmpty)
+                  TextButton(
+                    onPressed: onSeeAll,
+                    style: TextButton.styleFrom(foregroundColor: kBurntOrange),
+                    child: const Text('See all'),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (rp.loading && requests.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (rp.error != null && requests.isEmpty)
+              _RetryCard(message: rp.error!, onRetry: rp.fetchRequests)
+            else if (requests.isEmpty)
               Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: burntOrange.withOpacity(0.1),
-                        child: Text(
-                          user?.initials ?? 'U',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: burntOrange),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome,',
-                              style: TextStyle(color: darkBrown.withOpacity(0.6)),
-                            ),
-                            Text(
-                              user?.name ?? 'Resident',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: burntOrange.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          user?.role.toUpperCase() ?? 'RESIDENT',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: burntOrange),
-                        ),
+                      Icon(Icons.inbox, size: 48, color: kDarkBrown.withOpacity(0.3)),
+                      const SizedBox(height: 8),
+                      const Text('No requests yet', style: TextStyle(color: kDarkBrown)),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap the button above to submit your first request',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Quick Stats
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatCard(
-                      title: 'Total',
-                      value: '${rp.requests.length}',
-                      color: burntOrange,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      title: 'Pending',
-                      value: '${rp.requests.where((r) => r.status == 'pending').length}',
-                      color: Colors.orange,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      title: 'Completed',
-                      value: '${rp.requests.where((r) => r.status == 'completed').length}',
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Submit Request Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SubmitRequestScreen()),
-                    ).then((_) {
-                      rp.fetchRequests();
-                    });
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Submit New Request'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: burntOrange,
-                    foregroundColor: white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Categories
-              Text(
-                'Available Services',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
-              ),
-              const SizedBox(height: 12),
-              if (rp.categories.isEmpty)
-                const Center(child: CircularProgressIndicator())
-              else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.5,
-                  ),
-                  itemCount: rp.categories.length,
-                  itemBuilder: (ctx, i) {
-                    final cat = rp.categories[i];
-                    return _CategoryCard(category: cat);
-                  },
-                ),
-              const SizedBox(height: 24),
-
-              // Recent Requests
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Requests',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final homeState = context.findAncestorStateOfType<_HomeScreenState>();
-                      homeState?.setState(() {
-                        homeState._selectedIndex = 1;
-                      });
-                    },
-                    style: TextButton.styleFrom(foregroundColor: burntOrange),
-                    child: const Text('See all'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (rp.loading)
-                const Center(child: CircularProgressIndicator())
-              else if (rp.requests.isEmpty)
-                Card(
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        Icon(Icons.inbox, size: 48, color: darkBrown.withOpacity(0.3)),
-                        const SizedBox(height: 8),
-                        Text('No requests yet', style: TextStyle(color: darkBrown)),
-                        const SizedBox(height: 4),
-                        Text('Tap the button above to submit your first request',
-                            style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.6))),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                ...rp.requests.take(5).map((req) => _RequestCard(request: req)),
-              const SizedBox(height: 20),
-            ],
-          ),
+              )
+            else
+              ...requests.take(5).map((req) => RequestListCard(request: req)),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );
@@ -286,16 +262,10 @@ class DashboardPage extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final String title;
-  final String value;
+  final int value;
   final Color color;
 
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.color,
-  });
-
-  static const Color darkBrown = Color(0xFF46291D);
+  const _StatCard({required this.title, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -307,11 +277,11 @@ class _StatCard extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              value,
+              '$value',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: darkBrown.withOpacity(0.6))),
+            Text(title, style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
           ],
         ),
       ),
@@ -321,40 +291,34 @@ class _StatCard extends StatelessWidget {
 
 class _CategoryCard extends StatelessWidget {
   final CategoryModel category;
+  final VoidCallback onTap;
 
-  const _CategoryCard({required this.category});
-
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
+  const _CategoryCard({required this.category, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final color = colorFromHex(category.colorHex);
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SubmitRequestScreen(preSelectedCategory: category),
-            ),
-          ).then((_) {
-            context.read<RequestProvider>().fetchRequests();
-          });
-        },
-        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.category, size: 32, color: burntOrange),
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: color.withOpacity(0.12),
+                child: Icon(categoryIcon(category.icon), size: 22, color: color),
+              ),
               const SizedBox(height: 8),
               Text(
                 category.name,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: darkBrown),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kDarkBrown),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -366,79 +330,119 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
-class _RequestCard extends StatelessWidget {
-  final RequestModel request;
+class _RetryCard extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
 
-  const _RequestCard({required this.request});
-
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending': return Colors.orange;
-      case 'in_review': return burntOrange;
-      case 'approved': return Colors.green;
-      case 'processing': return Colors.purple;
-      case 'completed': return Colors.teal;
-      case 'rejected': return Colors.red;
-      default: return Colors.grey;
-    }
-  }
-
-  String _getStatusLabel(String status) {
-    switch (status) {
-      case 'in_review': return 'In Review';
-      default: return status[0].toUpperCase() + status.substring(1);
-    }
-  }
+  const _RetryCard({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getStatusColor(request.status).withOpacity(0.1),
-          child: Icon(Icons.assignment, color: _getStatusColor(request.status)),
-        ),
-        title: Text(
-          request.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: darkBrown, fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          request.trackingCode,
-          style: TextStyle(fontSize: 11, color: darkBrown.withOpacity(0.6)),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: _getStatusColor(request.status).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            _getStatusLabel(request.status),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: _getStatusColor(request.status),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.wifi_off, color: kDarkBrown.withOpacity(0.5)),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message, style: const TextStyle(color: kDarkBrown))),
+            TextButton(
+              onPressed: onRetry,
+              style: TextButton.styleFrom(foregroundColor: kBurntOrange),
+              child: const Text('Retry'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Request row used on the resident dashboard and the My Requests list.
+class RequestListCard extends StatelessWidget {
+  final RequestModel request;
+  final bool showRemarks;
+
+  const RequestListCard({super.key, required this.request, this.showRemarks = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = statusColor(request.status);
+    final hasRemarks = showRemarks && (request.remarks?.isNotEmpty ?? false);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => RequestDetailScreen(requestId: request.id)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: color.withOpacity(0.12),
+                    child: Icon(statusIcon(request.status), color: color, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          request.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: kDarkBrown, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${request.trackingCode} · ${request.category?.name ?? 'General'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          formatRelative(request.createdAt),
+                          style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  StatusChip(status: request.status),
+                ],
+              ),
+              if (hasRemarks)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(top: 10, left: 52),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: kCreamGold.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    request.remarks!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: kDarkBrown),
+                  ),
+                ),
+            ],
           ),
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => RequestDetailScreen(requestId: request.id),
-            ),
-          ).then((_) {
-            context.read<RequestProvider>().fetchRequests();
-          });
-        },
       ),
     );
   }

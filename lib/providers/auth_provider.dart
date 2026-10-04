@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api_service.dart';
 import '../core/models.dart';
 
@@ -17,135 +16,78 @@ class AuthProvider extends ChangeNotifier {
   bool get isStaff => _user?.isStaff ?? false;
   bool get isResident => _user?.isResident ?? false;
 
-  AuthProvider() {
-    tryAutoLogin();
-  }
-
+  /// Restores the session from a saved token. Called once by the splash screen.
   Future<void> tryAutoLogin() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      if (token == null) return;
+    final token = await ApiService.getToken();
+    if (token == null) return;
 
+    try {
       final res = await ApiService.get('/me');
       if (res.statusCode == 200) {
         _user = UserModel.fromJson(jsonDecode(res.body));
         notifyListeners();
-      } else {
-        await prefs.remove('auth_token');
+      } else if (res.statusCode == 401 || res.statusCode == 403) {
+        // Token revoked or expired: sign in again.
+        await ApiService.clearToken();
       }
     } catch (e) {
+      // Server unreachable: keep the token so the user isn't logged out
+      // just for opening the app offline. They land on the login screen.
       debugPrint('Auto login error: $e');
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('auth_token');
     }
   }
 
   Future<bool> login(String email, String password) async {
-    _loading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final res = await ApiService.post(
-        '/login',
-        {'email': email, 'password': password},
-        auth: false,
-      );
-
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', body['token']);
-        _user = UserModel.fromJson(body['user']);
-        _loading = false;
-        _error = null;
-        notifyListeners();
-        return true;
-      } else {
-        final body = jsonDecode(res.body);
-        _error = body['message'] ?? body['errors']?['email']?[0] ?? 'Login failed';
-        _loading = false;
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      _error = 'Connection error: Unable to connect to server';
-      _loading = false;
-      debugPrint('Login error: $e');
-      notifyListeners();
-      return false;
-    }
+    return _authenticate(
+      () => ApiService.post('/login', {'email': email, 'password': password}, auth: false),
+      okStatus: 200,
+      fallbackError: 'Login failed',
+    );
   }
 
   Future<bool> register(Map<String, dynamic> data) async {
+    return _authenticate(
+      () => ApiService.post('/register', data, auth: false),
+      okStatus: 201,
+      fallbackError: 'Registration failed',
+    );
+  }
+
+  Future<bool> _authenticate(
+    Future<dynamic> Function() send, {
+    required int okStatus,
+    required String fallbackError,
+  }) async {
     _loading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final res = await ApiService.post('/register', data, auth: false);
-
-      if (res.statusCode == 201) {
+      final res = await send();
+      if (res.statusCode == okStatus) {
         final body = jsonDecode(res.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', body['token']);
+        await ApiService.saveToken(body['token']);
         _user = UserModel.fromJson(body['user']);
-        _loading = false;
-        _error = null;
-        notifyListeners();
         return true;
-      } else if (res.statusCode == 422) {
-        final body = jsonDecode(res.body);
-        String errorMessage = 'Registration failed';
-
-        // Handle validation errors (including duplicate email)
-        if (body['errors'] != null) {
-          final errors = body['errors'] as Map<String, dynamic>;
-          if (errors.containsKey('email')) {
-            final emailErrors = errors['email'] as List;
-            if (emailErrors.isNotEmpty) {
-              errorMessage = emailErrors.first;
-            }
-          } else if (errors.containsKey('name')) {
-            final nameErrors = errors['name'] as List;
-            if (nameErrors.isNotEmpty) {
-              errorMessage = nameErrors.first;
-            }
-          } else {
-            errorMessage = errors.values.first.first;
-          }
-        } else if (body['message'] != null) {
-          errorMessage = body['message'];
-        }
-
-        _error = errorMessage;
-        _loading = false;
-        notifyListeners();
-        return false;
-      } else {
-        final body = jsonDecode(res.body);
-        _error = body['message'] ?? 'Registration failed';
-        _loading = false;
-        notifyListeners();
-        return false;
       }
-    } catch (e) {
-      _error = 'Connection error: Unable to connect to server';
-      _loading = false;
-      debugPrint('Register error: $e');
-      notifyListeners();
+      _error = ApiService.errorMessage(res, fallbackError);
       return false;
+    } catch (e) {
+      debugPrint('Auth error: $e');
+      _error = 'Unable to connect to the server. Check that the API is running.';
+      return false;
+    } finally {
+      _loading = false;
+      notifyListeners();
     }
   }
-  
+
   Future<void> logout() async {
     try {
       await ApiService.post('/logout', {});
     } catch (_) {}
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    await ApiService.clearToken();
     _user = null;
     _error = null;
     notifyListeners();
