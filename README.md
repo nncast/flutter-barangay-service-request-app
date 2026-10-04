@@ -19,6 +19,26 @@
 
 The app talks to the [Laravel API backend](https://github.com/nncast/laravel-barangay-service-request-api), which must be running for the app to work.
 
+**Residents**
+
+<p align="center">
+  <img src="docs/screenshots/login.png" width="200" alt="Login">
+  <img src="docs/screenshots/resident-dashboard.png" width="200" alt="Resident dashboard">
+  <img src="docs/screenshots/submit-request.png" width="200" alt="Submit a request">
+  <img src="docs/screenshots/my-requests.png" width="200" alt="My requests">
+  <img src="docs/screenshots/request-detail.png" width="200" alt="Request details">
+  <img src="docs/screenshots/notifications.png" width="200" alt="Notifications">
+</p>
+
+**Staff and admins**
+
+<p align="center">
+  <img src="docs/screenshots/admin-dashboard.png" width="200" alt="Admin dashboard">
+  <img src="docs/screenshots/admin-requests.png" width="200" alt="All requests">
+  <img src="docs/screenshots/admin-request-details.png" width="200" alt="Request details for staff">
+  <img src="docs/screenshots/admin-users.png" width="200" alt="Manage users">
+</p>
+
 ## Features
 
 **Residents**
