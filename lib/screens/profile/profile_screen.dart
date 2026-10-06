@@ -34,33 +34,33 @@ class ProfileScreen extends StatelessWidget {
           children: [
             // Profile Header
             Container(
-              color: burntOrange.withOpacity(0.05),
+              color: burntOrange.withValues(alpha: 0.05),
               padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: burntOrange.withOpacity(0.2),
+                    backgroundColor: burntOrange.withValues(alpha: 0.2),
                     child: Text(
                       user?.initials ?? 'U',
-                      style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: burntOrange),
+                      style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: burntOrange),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     user?.name ?? 'User',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: darkBrown),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: burntOrange.withOpacity(0.1),
+                      color: burntOrange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       user?.role.toUpperCase() ?? 'RESIDENT',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: burntOrange),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: burntOrange),
                     ),
                   ),
                 ],
@@ -72,18 +72,18 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Personal Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 16),
                   _infoTile(Icons.email, 'Email', user?.email ?? 'Not set'),
                   _infoTile(Icons.phone, 'Phone', _orNotSet(user?.phone)),
                   _infoTile(Icons.home, 'Address', _orNotSet(user?.address)),
                   const Divider(height: 32, color: darkBrown),
-                  Text(
+                  const Text(
                     'Account Settings',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 16),
                   _actionTile(Icons.help_outline, 'Help & Support', () {
@@ -97,11 +97,11 @@ class ProfileScreen extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () => confirmLogout(context),
-                      icon: Icon(Icons.logout, color: burntOrange),
-                      label: Text('Logout', style: TextStyle(color: burntOrange)),
+                      icon: const Icon(Icons.logout, color: burntOrange),
+                      label: const Text('Logout', style: const TextStyle(color: burntOrange)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(color: burntOrange),
+                        side: const BorderSide(color: burntOrange),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -126,7 +126,7 @@ class ProfileScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: burntOrange.withOpacity(0.1),
+              color: burntOrange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 20, color: burntOrange),
@@ -136,9 +136,9 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.6))),
+                Text(label, style: TextStyle(fontSize: 12, color: darkBrown.withValues(alpha: 0.6))),
                 const SizedBox(height: 2),
-                Text(value, style: TextStyle(fontSize: 14, color: darkBrown)),
+                Text(value, style: const TextStyle(fontSize: 14, color: darkBrown)),
               ],
             ),
           ),
@@ -150,8 +150,8 @@ class ProfileScreen extends StatelessWidget {
   Widget _actionTile(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: burntOrange),
-      title: Text(title, style: TextStyle(color: darkBrown)),
-      trailing: Icon(Icons.chevron_right, color: darkBrown.withOpacity(0.5)),
+      title: Text(title, style: const TextStyle(color: darkBrown)),
+      trailing: Icon(Icons.chevron_right, color: darkBrown.withValues(alpha: 0.5)),
       onTap: onTap,
     );
   }
@@ -174,10 +174,10 @@ class ProfileScreen extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: burntOrange.withOpacity(0.1),
+                    color: burntOrange.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.account_balance,
                     size: 48,
                     color: burntOrange,
@@ -191,7 +191,7 @@ class ProfileScreen extends StatelessWidget {
               'Version 1.0.0',
               style: TextStyle(
                 fontSize: 12,
-                color: darkBrown.withOpacity(0.6),
+                color: darkBrown.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -202,9 +202,9 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const Divider(color: darkBrown),
             const SizedBox(height: 12),
-            Text(
+            const Text(
               'A service request system for barangay residents to submit and track requests efficiently.',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 color: darkBrown,
                 height: 1.4,
@@ -216,20 +216,20 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: burntOrange.withOpacity(0.05),
+                color: burntOrange.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: burntOrange.withOpacity(0.2)),
+                border: Border.all(color: burntOrange.withValues(alpha: 0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
-                      Icon(Icons.code, size: 16, color: burntOrange),
-                      const SizedBox(width: 8),
-                      Text(
+                      const Icon(Icons.code, size: 16, color: burntOrange),
+                      SizedBox(width: 8),
+                      const Text(
                         'License',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: darkBrown,
@@ -238,9 +238,9 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'MIT License',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: burntOrange,
@@ -251,7 +251,7 @@ class ProfileScreen extends StatelessWidget {
                     'Copyright © 2026 Barangay Service System',
                     style: TextStyle(
                       fontSize: 11,
-                      color: darkBrown.withOpacity(0.7),
+                      color: darkBrown.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -259,7 +259,7 @@ class ProfileScreen extends StatelessWidget {
                     'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files to use, copy, modify, merge, publish, and distribute copies of the Software.',
                     style: TextStyle(
                       fontSize: 11,
-                      color: darkBrown.withOpacity(0.6),
+                      color: darkBrown.withValues(alpha: 0.6),
                       height: 1.3,
                     ),
                   ),
@@ -269,18 +269,18 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontStyle: FontStyle.italic,
-                      color: darkBrown.withOpacity(0.5),
+                      color: darkBrown.withValues(alpha: 0.5),
                     ),
                   ),
                   const SizedBox(height: 8),
                   // Developer Credits
-                  Row(
+                  const Row(
                     children: [
-                      Icon(Icons.people, size: 16, color: burntOrange),
-                      const SizedBox(width: 8),
-                      Text(
+                      const Icon(Icons.people, size: 16, color: burntOrange),
+                      SizedBox(width: 8),
+                      const Text(
                         'Developers',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: darkBrown,
@@ -325,12 +325,12 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: burntOrange.withOpacity(0.1),
+        color: burntOrange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         name,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10,
           color: burntOrange,
         ),
@@ -346,20 +346,20 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Row(
+        title: const Row(
           children: [
-            Icon(Icons.help_outline, color: burntOrange),
-            const SizedBox(width: 8),
-            Text('Help & Support', style: TextStyle(color: darkBrown)),
+            const Icon(Icons.help_outline, color: burntOrange),
+            SizedBox(width: 8),
+            const Text('Help & Support', style: const TextStyle(color: darkBrown)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'How can we help you?',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkBrown),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkBrown),
             ),
             const SizedBox(height: 16),
             _helpOption(
@@ -418,9 +418,9 @@ class ProfileScreen extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: burntOrange, size: 28),
-      title: Text(title, style: TextStyle(fontWeight: FontWeight.w500, color: darkBrown)),
-      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: darkBrown.withOpacity(0.7))),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: darkBrown.withOpacity(0.5)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: darkBrown)),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: darkBrown.withValues(alpha: 0.7))),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: darkBrown.withValues(alpha: 0.5)),
       onTap: onTap,
     );
   }
@@ -433,41 +433,41 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Text('Barangay Hall', style: TextStyle(color: darkBrown)),
+        title: const Text('Barangay Hall', style: const TextStyle(color: darkBrown)),
         content: SingleChildScrollView(
           child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(Icons.location_on, color: burntOrange),
-              title: Text('Address', style: TextStyle(color: darkBrown)),
-              subtitle: Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: darkBrown.withOpacity(0.7))),
+              leading: const Icon(Icons.location_on, color: burntOrange),
+              title: const Text('Address', style: const TextStyle(color: darkBrown)),
+              subtitle: Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: darkBrown.withValues(alpha: 0.7))),
               onTap: () {
                 final url = Uri.parse('https://www.google.com/maps/place/Dubinan+East+Barangay+Multi-purpose+Hall/@16.6891599,121.5401739,17z/data=!3m1!4b1!4m6!3m5!1s0x339006022a6053e3:0x56ebaaba7bd70229!8m2!3d16.6891599!4d121.5427488!16s%2Fg%2F1hjgkv_sh?entry=ttu&g_ep=EgoyMDI2MDUwMi4wIKXMDSoASAFQAw%3D%3D');
                 _launchUrl(url);
               },
             ),
             ListTile(
-              leading: Icon(Icons.phone, color: burntOrange),
-              title: Text('Phone', style: TextStyle(color: darkBrown)),
+              leading: const Icon(Icons.phone, color: burntOrange),
+              title: const Text('Phone', style: const TextStyle(color: darkBrown)),
               subtitle: const Text('(02) 1234-5678'),
               onTap: () {
                 _launchUrl(Uri.parse('tel:0212345678'));
               },
             ),
             ListTile(
-              leading: Icon(Icons.email, color: burntOrange),
-              title: Text('Email', style: TextStyle(color: darkBrown)),
+              leading: const Icon(Icons.email, color: burntOrange),
+              title: const Text('Email', style: const TextStyle(color: darkBrown)),
               subtitle: const Text(_hallEmail),
               onTap: () {
                 _launchUrl(Uri(scheme: 'mailto', path: _hallEmail));
               },
             ),
-            ListTile(
-              leading: Icon(Icons.access_time, color: burntOrange),
-              title: Text('Office Hours', style: TextStyle(color: darkBrown)),
-              subtitle: const Text('Monday - Friday: 8:00 AM - 5:00 PM'),
+            const ListTile(
+              leading: const Icon(Icons.access_time, color: burntOrange),
+              title: const Text('Office Hours', style: const TextStyle(color: darkBrown)),
+              subtitle: Text('Monday - Friday: 8:00 AM - 5:00 PM'),
             ),
           ],
         ),
@@ -493,7 +493,7 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Text('Frequently Asked Questions', style: TextStyle(color: darkBrown)),
+        title: const Text('Frequently Asked Questions', style: const TextStyle(color: darkBrown)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -546,7 +546,7 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: darkBrown.withOpacity(0.05),
+        color: darkBrown.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -576,7 +576,7 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   question,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: darkBrown,
@@ -613,7 +613,7 @@ class ProfileScreen extends StatelessWidget {
                   answer,
                   style: TextStyle(
                     fontSize: 13,
-                    color: darkBrown.withOpacity(0.8),
+                    color: darkBrown.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -635,28 +635,28 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Text('Report an Issue', style: TextStyle(color: darkBrown)),
+        title: const Text('Report an Issue', style: const TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Please describe the issue you are experiencing:', style: TextStyle(color: darkBrown)),
+            const Text('Please describe the issue you are experiencing:', style: const TextStyle(color: darkBrown)),
             const SizedBox(height: 16),
             TextField(
               controller: issueController,
               decoration: InputDecoration(
                 hintText: 'Describe the issue...',
-                hintStyle: TextStyle(color: darkBrown.withOpacity(0.5)),
+                hintStyle: TextStyle(color: darkBrown.withValues(alpha: 0.5)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: darkBrown),
+                  borderSide: const BorderSide(color: darkBrown),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                  borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: burntOrange, width: 2),
+                  borderSide: const BorderSide(color: burntOrange, width: 2),
                 ),
               ),
               maxLines: 5,

@@ -87,11 +87,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              Icon(Icons.person_add, size: 60, color: burntOrange),
+              const Icon(Icons.person_add, size: 60, color: burntOrange),
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 'Register as Resident',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: darkBrown,
@@ -103,16 +103,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _nameCtrl,
                 decoration: InputDecoration(
                   labelText: 'Full Name',
-                  labelStyle: TextStyle(color: darkBrown),
-                  prefixIcon: Icon(Icons.person, color: burntOrange),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown),
+                  labelStyle: const TextStyle(color: darkBrown),
+                  prefixIcon: const Icon(Icons.person, color: burntOrange),
+                  border: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: darkBrown),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: burntOrange, width: 2),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
                 textCapitalization: TextCapitalization.words,
@@ -123,16 +123,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _emailCtrl,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: darkBrown),
-                  prefixIcon: Icon(Icons.email, color: burntOrange),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown),
+                  labelStyle: const TextStyle(color: darkBrown),
+                  prefixIcon: const Icon(Icons.email, color: burntOrange),
+                  border: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: darkBrown),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: burntOrange, width: 2),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -144,16 +144,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: 'Phone (optional)',
-                  labelStyle: TextStyle(color: darkBrown),
-                  prefixIcon: Icon(Icons.phone, color: burntOrange),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown),
+                  labelStyle: const TextStyle(color: darkBrown),
+                  prefixIcon: const Icon(Icons.phone, color: burntOrange),
+                  border: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: darkBrown),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: burntOrange, width: 2),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
               ),
@@ -162,16 +162,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _addressCtrl,
                 decoration: InputDecoration(
                   labelText: 'Address (optional)',
-                  labelStyle: TextStyle(color: darkBrown),
-                  prefixIcon: Icon(Icons.home, color: burntOrange),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown),
+                  labelStyle: const TextStyle(color: darkBrown),
+                  prefixIcon: const Icon(Icons.home, color: burntOrange),
+                  border: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: darkBrown),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: burntOrange, width: 2),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
                 maxLines: 2,
@@ -182,20 +182,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: darkBrown),
-                  prefixIcon: Icon(Icons.lock, color: burntOrange),
+                  labelStyle: const TextStyle(color: darkBrown),
+                  prefixIcon: const Icon(Icons.lock, color: burntOrange),
                   suffixIcon: IconButton(
                     icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: darkBrown),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown),
+                  border: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: darkBrown),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: burntOrange, width: 2),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
                 validator: (v) => (v ?? '').length < 8 ? 'Password must be at least 8 characters' : null,
@@ -206,16 +206,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
-                  labelStyle: TextStyle(color: darkBrown),
-                  prefixIcon: Icon(Icons.lock_outline, color: burntOrange),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown),
+                  labelStyle: const TextStyle(color: darkBrown),
+                  prefixIcon: const Icon(Icons.lock_outline, color: burntOrange),
+                  border: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: darkBrown),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                    borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: burntOrange, width: 2),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: const BorderSide(color: burntOrange, width: 2),
                   ),
                 ),
                 validator: (v) => v != _passCtrl.text ? 'Passwords do not match' : null,
@@ -232,12 +232,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 child: auth.loading
-                    ? SizedBox(
+                    ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(
+                  child: const CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(white),
                   ),
                 )
                     : const Text('Register', style: TextStyle(fontSize: 16)),

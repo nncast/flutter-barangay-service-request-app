@@ -25,7 +25,7 @@ InputDecoration _fieldDecoration(String label) => InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(color: kDarkBrown),
       border: const OutlineInputBorder(),
-      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3))),
+      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3))),
       focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: kBurntOrange, width: 2)),
     );
 
@@ -107,13 +107,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: 'Search name or email',
-                      hintStyle: TextStyle(color: kDarkBrown.withOpacity(0.5)),
+                      hintStyle: TextStyle(color: kDarkBrown.withValues(alpha: 0.5)),
                       prefixIcon: const Icon(Icons.search, color: kBurntOrange),
                       isDense: true,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3)),
+                        borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -127,7 +127,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: kDarkBrown.withOpacity(0.3)),
+                    border: Border.all(color: kDarkBrown.withValues(alpha: 0.3)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -168,7 +168,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: kCreamGold.withOpacity(0.35),
+                color: kCreamGold.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
@@ -187,12 +187,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           children: [
                             const SizedBox(height: 80),
-                            Icon(Icons.people_outline, size: 64, color: kDarkBrown.withOpacity(0.3)),
+                            Icon(Icons.people_outline, size: 64, color: kDarkBrown.withValues(alpha: 0.3)),
                             const SizedBox(height: 16),
                             Text(
                               userProvider.error ?? 'No users found',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: kDarkBrown.withOpacity(0.6)),
+                              style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6)),
                             ),
                           ],
                         )
@@ -231,8 +231,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       padding: const EdgeInsets.only(right: 8),
       child: Chip(
         visualDensity: VisualDensity.compact,
-        backgroundColor: color.withOpacity(0.08),
-        side: BorderSide(color: color.withOpacity(0.3)),
+        backgroundColor: color.withValues(alpha: 0.08),
+        side: BorderSide(color: color.withValues(alpha: 0.3)),
         shape: const StadiumBorder(),
         label: Text(
           '$label  $count',
@@ -274,9 +274,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.08),
+                color: Colors.red.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
               ),
               child: const Text(
                 'Their own requests and notifications are deleted too. This cannot be undone. '
@@ -416,7 +416,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 ],
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _role,
+                  initialValue: _role,
                   decoration: _fieldDecoration(widget.isCurrentUser ? 'Role (your own — can\'t change)' : 'Role'),
                   items: _roleItems,
                   onChanged: widget.isCurrentUser ? null : (value) => setState(() => _role = value ?? _role),
@@ -427,7 +427,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                     title: const Text('Active', style: TextStyle(color: kDarkBrown)),
                     subtitle: Text(
                       _active ? 'Can sign in' : 'Signed out and blocked from signing in',
-                      style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
+                      style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
                     ),
                     value: _active,
                     onChanged: (v) => setState(() => _active = v),
@@ -466,7 +466,7 @@ class _UserCard extends StatelessWidget {
         margin: const EdgeInsets.only(right: 6, top: 4),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(text, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
@@ -485,7 +485,7 @@ class _UserCard extends StatelessWidget {
         child: ListTile(
           contentPadding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
           leading: CircleAvatar(
-            backgroundColor: color.withOpacity(0.12),
+            backgroundColor: color.withValues(alpha: 0.12),
             child: Text(user.initials, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           ),
           title: Text(
@@ -501,7 +501,7 @@ class _UserCard extends StatelessWidget {
                 user.email,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.7)),
+                style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.7)),
               ),
               Wrap(
                 children: [

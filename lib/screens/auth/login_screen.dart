@@ -74,16 +74,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     autofillHints: const [AutofillHints.email],
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: darkBrown),
-                      prefixIcon: Icon(Icons.email, color: burntOrange),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown),
+                      labelStyle: const TextStyle(color: darkBrown),
+                      prefixIcon: const Icon(Icons.email, color: burntOrange),
+                      border: const OutlineInputBorder(
+                        borderSide: const BorderSide(color: darkBrown),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                        borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: burntOrange, width: 2),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: const BorderSide(color: burntOrange, width: 2),
                       ),
                     ),
                     validator: (v) => (v ?? '').trim().isEmpty ? 'Enter email' : null,
@@ -97,20 +97,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     onFieldSubmitted: (_) => _login(),
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: TextStyle(color: darkBrown),
-                      prefixIcon: Icon(Icons.lock, color: burntOrange),
+                      labelStyle: const TextStyle(color: darkBrown),
+                      prefixIcon: const Icon(Icons.lock, color: burntOrange),
                       suffixIcon: IconButton(
                         icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: darkBrown),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown),
+                      border: const OutlineInputBorder(
+                        borderSide: const BorderSide(color: darkBrown),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown.withOpacity(0.3)),
+                        borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: burntOrange, width: 2),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: const BorderSide(color: burntOrange, width: 2),
                       ),
                     ),
                     validator: (v) => (v ?? '').isEmpty ? 'Enter password' : null,
@@ -127,12 +127,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     child: auth.loading
-                        ? SizedBox(
+                        ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(
+                      child: const CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(white),
+                        valueColor: const AlwaysStoppedAnimation<Color>(white),
                       ),
                     )
                         : const Text('Login', style: TextStyle(fontSize: 16)),

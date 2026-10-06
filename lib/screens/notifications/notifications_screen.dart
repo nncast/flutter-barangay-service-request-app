@@ -58,14 +58,14 @@ class NotificationsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(32),
                 children: [
                   const SizedBox(height: 80),
-                  Icon(Icons.notifications_none, size: 64, color: kDarkBrown.withOpacity(0.3)),
+                  Icon(Icons.notifications_none, size: 64, color: kDarkBrown.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   const Text('No notifications yet', textAlign: TextAlign.center, style: TextStyle(color: kDarkBrown)),
                   const SizedBox(height: 8),
                   Text(
                     'You\'ll be notified when your requests are updated',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: kDarkBrown.withOpacity(0.6)),
+                    style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6)),
                   ),
                 ],
               )
@@ -76,7 +76,7 @@ class NotificationsScreen extends StatelessWidget {
                   final notification = rp.notifications[index];
                   return Card(
                     // Opaque blend: a translucent card color lets the shadow show through.
-                    color: notification.isRead ? kWhite : Color.alphaBlend(kCreamGold.withOpacity(0.3), kWhite),
+                    color: notification.isRead ? kWhite : Color.alphaBlend(kCreamGold.withValues(alpha: 0.3), kWhite),
                     margin: const EdgeInsets.only(bottom: 10),
                     elevation: notification.isRead ? 0.5 : 1.5,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -84,7 +84,7 @@ class NotificationsScreen extends StatelessWidget {
                     child: ListTile(
                       onTap: () => _open(context, notification),
                       leading: CircleAvatar(
-                        backgroundColor: kBurntOrange.withOpacity(0.1),
+                        backgroundColor: kBurntOrange.withValues(alpha: 0.1),
                         child: Icon(_iconForType(notification.type), color: kBurntOrange),
                       ),
                       title: Text(
@@ -98,11 +98,11 @@ class NotificationsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 2),
-                          Text(notification.body, style: TextStyle(color: kDarkBrown.withOpacity(0.75))),
+                          Text(notification.body, style: TextStyle(color: kDarkBrown.withValues(alpha: 0.75))),
                           const SizedBox(height: 4),
                           Text(
                             formatRelative(notification.createdAt),
-                            style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                            style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.5)),
                           ),
                         ],
                       ),

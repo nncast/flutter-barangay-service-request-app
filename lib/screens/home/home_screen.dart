@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: kWhite,
         selectedItemColor: kBurntOrange,
-        unselectedItemColor: kDarkBrown.withOpacity(0.5),
+        unselectedItemColor: kDarkBrown.withValues(alpha: 0.5),
         items: [
           const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           const BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'My Requests'),
@@ -114,7 +114,7 @@ class DashboardPage extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: kBurntOrange.withOpacity(0.1),
+                      backgroundColor: kBurntOrange.withValues(alpha: 0.1),
                       child: Text(
                         user?.initials ?? 'U',
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: kBurntOrange),
@@ -125,7 +125,7 @@ class DashboardPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Welcome,', style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
+                          Text('Welcome,', style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6))),
                           Text(
                             user?.name ?? 'Resident',
                             maxLines: 1,
@@ -237,14 +237,14 @@ class DashboardPage extends StatelessWidget {
                   padding: const EdgeInsets.all(32),
                   child: Column(
                     children: [
-                      Icon(Icons.inbox, size: 48, color: kDarkBrown.withOpacity(0.3)),
+                      Icon(Icons.inbox, size: 48, color: kDarkBrown.withValues(alpha: 0.3)),
                       const SizedBox(height: 8),
                       const Text('No requests yet', style: TextStyle(color: kDarkBrown)),
                       const SizedBox(height: 4),
                       Text(
                         'Tap the button above to submit your first request',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
+                        style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -281,7 +281,7 @@ class _StatCard extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
+            Text(title, style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6))),
           ],
         ),
       ),
@@ -311,7 +311,7 @@ class _CategoryCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: color.withOpacity(0.12),
+                backgroundColor: color.withValues(alpha: 0.12),
                 child: Icon(categoryIcon(category.icon), size: 22, color: color),
               ),
               const SizedBox(height: 8),
@@ -345,7 +345,7 @@ class _RetryCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(Icons.wifi_off, color: kDarkBrown.withOpacity(0.5)),
+            Icon(Icons.wifi_off, color: kDarkBrown.withValues(alpha: 0.5)),
             const SizedBox(width: 12),
             Expanded(child: Text(message, style: const TextStyle(color: kDarkBrown))),
             TextButton(
@@ -391,7 +391,7 @@ class RequestListCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    backgroundColor: color.withOpacity(0.12),
+                    backgroundColor: color.withValues(alpha: 0.12),
                     child: Icon(statusIcon(request.status), color: color, size: 20),
                   ),
                   const SizedBox(width: 12),
@@ -410,12 +410,12 @@ class RequestListCard extends StatelessWidget {
                           '${request.trackingCode} · ${request.category?.name ?? 'General'}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
+                          style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           formatRelative(request.createdAt),
-                          style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                          style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.5)),
                         ),
                       ],
                     ),
@@ -430,7 +430,7 @@ class RequestListCard extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 10, left: 52),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: kCreamGold.withOpacity(0.3),
+                    color: kCreamGold.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

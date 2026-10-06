@@ -60,7 +60,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: kWhite,
         selectedItemColor: kBurntOrange,
-        unselectedItemColor: kDarkBrown.withOpacity(0.5),
+        unselectedItemColor: kDarkBrown.withValues(alpha: 0.5),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Requests'),
@@ -104,7 +104,7 @@ class AdminDashboardPage extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 26,
-                          backgroundColor: kBurntOrange.withOpacity(0.1),
+                          backgroundColor: kBurntOrange.withValues(alpha: 0.1),
                           child: Text(
                             user?.initials ?? 'A',
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kBurntOrange),
@@ -115,7 +115,7 @@ class AdminDashboardPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Welcome,', style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
+                              Text('Welcome,', style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6))),
                               Text(
                                 user?.name ?? 'Admin',
                                 maxLines: 1,
@@ -127,7 +127,7 @@ class AdminDashboardPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Divider(height: 24, color: kDarkBrown.withOpacity(0.12)),
+                    Divider(height: 24, color: kDarkBrown.withValues(alpha: 0.12)),
                     Row(
                       children: [
                         _PeriodStat(label: 'Today', value: stats.today),
@@ -223,7 +223,7 @@ class _PeriodStat extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.6)),
+            style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.6)),
           ),
         ],
       ),
@@ -253,7 +253,7 @@ class _AdminStatCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: color.withOpacity(0.12),
+                backgroundColor: color.withValues(alpha: 0.12),
                 child: Icon(statusIcon(status), size: 18, color: color),
               ),
               const SizedBox(width: 10),
@@ -267,7 +267,7 @@ class _AdminStatCard extends StatelessWidget {
                       statusLabel(status),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.65)),
+                      style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.65)),
                     ),
                   ],
                 ),
@@ -303,7 +303,7 @@ class AdminRequestCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                backgroundColor: color.withOpacity(0.12),
+                backgroundColor: color.withValues(alpha: 0.12),
                 child: Icon(statusIcon(request.status), color: color, size: 20),
               ),
               const SizedBox(width: 12),
@@ -322,12 +322,12 @@ class AdminRequestCard extends StatelessWidget {
                       '${request.user?.name ?? 'Unknown'} · ${request.category?.name ?? 'General'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.65)),
+                      style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.65)),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '${request.trackingCode} · ${formatRelative(request.createdAt)}',
-                      style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                      style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.5)),
                     ),
                   ],
                 ),
@@ -384,7 +384,7 @@ void showRequestDetails(BuildContext context, RequestModel request) {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: statusColor(request.status).withOpacity(0.08),
+                  color: statusColor(request.status).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -393,7 +393,7 @@ void showRequestDetails(BuildContext context, RequestModel request) {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Tracking Code', style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.6))),
+                          Text('Tracking Code', style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.6))),
                           Text(request.trackingCode,
                               style: const TextStyle(fontWeight: FontWeight.bold, color: kDarkBrown)),
                         ],
@@ -537,7 +537,7 @@ class _StatusDialogState extends State<_StatusDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownButtonFormField<String>(
-                value: _status,
+                initialValue: _status,
                 decoration: const InputDecoration(labelText: 'Status', border: OutlineInputBorder()),
                 items: kStaffSettableStatuses
                     .map((s) => DropdownMenuItem(
@@ -613,7 +613,7 @@ class _InfoSection extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: kBurntOrange.withOpacity(0.1),
+              color: kBurntOrange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 18, color: kBurntOrange),
@@ -623,7 +623,7 @@ class _InfoSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.6))),
+                Text(title, style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.6))),
                 const SizedBox(height: 2),
                 Text(
                   content,
@@ -635,7 +635,7 @@ class _InfoSection extends StatelessWidget {
                   ),
                 ),
                 if (subtitle != null && subtitle!.isNotEmpty)
-                  Text(subtitle!, style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.55))),
+                  Text(subtitle!, style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.55))),
               ],
             ),
           ),
@@ -656,7 +656,7 @@ class _HistorySection extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: kDarkBrown.withOpacity(0.04),
+        color: kDarkBrown.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -696,10 +696,10 @@ class _HistorySection extends StatelessWidget {
                           ),
                         ),
                         if (log.note?.isNotEmpty ?? false)
-                          Text(log.note!, style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.75))),
+                          Text(log.note!, style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.75))),
                         Text(
                           [formatDateTime(log.createdAt), if (log.changer != null) log.changer!.name].join(' · '),
-                          style: TextStyle(fontSize: 10, color: kDarkBrown.withOpacity(0.5)),
+                          style: TextStyle(fontSize: 10, color: kDarkBrown.withValues(alpha: 0.5)),
                         ),
                       ],
                     ),
@@ -782,7 +782,7 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search title, code, requester, category',
-                hintStyle: TextStyle(color: kDarkBrown.withOpacity(0.5)),
+                hintStyle: TextStyle(color: kDarkBrown.withValues(alpha: 0.5)),
                 prefixIcon: const Icon(Icons.search, color: kBurntOrange),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -797,7 +797,7 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3)),
+                  borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -827,7 +827,7 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
               children: [
                 Text(
                   '${filtered.length} request${filtered.length == 1 ? '' : 's'}',
-                  style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.6)),
+                  style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
                 ),
                 const Spacer(),
                 if (_searchQuery.isNotEmpty || status != 'all')
@@ -850,7 +850,7 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           children: [
                             const SizedBox(height: 80),
-                            Icon(Icons.inbox, size: 64, color: kDarkBrown.withOpacity(0.3)),
+                            Icon(Icons.inbox, size: 64, color: kDarkBrown.withValues(alpha: 0.3)),
                             const SizedBox(height: 16),
                             Text(
                               rp.error ?? 'No requests found',
@@ -889,7 +889,7 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
       onSelected: (_) => widget.filter.value = status,
       backgroundColor: kWhite,
       selectedColor: color,
-      side: BorderSide(color: isSelected ? color : kDarkBrown.withOpacity(0.25)),
+      side: BorderSide(color: isSelected ? color : kDarkBrown.withValues(alpha: 0.25)),
       shape: const StadiumBorder(),
     );
   }
@@ -911,7 +911,7 @@ class AdminProfilePage extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 50,
-              backgroundColor: kBurntOrange.withOpacity(0.1),
+              backgroundColor: kBurntOrange.withValues(alpha: 0.1),
               child: Text(
                 user?.initials ?? 'A',
                 style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: kBurntOrange),
@@ -928,14 +928,14 @@ class AdminProfilePage extends StatelessWidget {
           Text(
             user?.email ?? '',
             textAlign: TextAlign.center,
-            style: TextStyle(color: kDarkBrown.withOpacity(0.6)),
+            style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6)),
           ),
           const SizedBox(height: 10),
           Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: kBurntOrange.withOpacity(0.1),
+                color: kBurntOrange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

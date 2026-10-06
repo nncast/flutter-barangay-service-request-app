@@ -76,12 +76,12 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
   InputDecoration _inputDecoration(String hint, {IconData? icon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: kDarkBrown.withOpacity(0.5)),
+      hintStyle: TextStyle(color: kDarkBrown.withValues(alpha: 0.5)),
       prefixIcon: icon != null ? Icon(icon, color: kBurntOrange) : null,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: kDarkBrown.withOpacity(0.3)),
+        borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -146,7 +146,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                         avatar: Icon(categoryIcon(cat.icon), size: 16, color: isSelected ? kWhite : color),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(color: isSelected ? color : kDarkBrown.withOpacity(0.2)),
+                          side: BorderSide(color: isSelected ? color : kDarkBrown.withValues(alpha: 0.2)),
                         ),
                       );
                     }).toList(),
@@ -203,9 +203,9 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: kBurntOrange.withOpacity(0.05),
+                    color: kBurntOrange.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kBurntOrange.withOpacity(0.2)),
+                    border: Border.all(color: kBurntOrange.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
@@ -214,7 +214,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                       Expanded(
                         child: Text(
                           'Your request will be reviewed by barangay staff. You will receive notifications when its status changes.',
-                          style: TextStyle(fontSize: 12, color: kDarkBrown.withOpacity(0.8)),
+                          style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.8)),
                         ),
                       ),
                     ],
@@ -260,20 +260,20 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? color : kDarkBrown.withOpacity(0.2)),
+          border: Border.all(color: isSelected ? color : kDarkBrown.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? color : kDarkBrown.withOpacity(0.5), size: 20),
+            Icon(icon, color: isSelected ? color : kDarkBrown.withValues(alpha: 0.5), size: 20),
             const SizedBox(height: 4),
             Text(
               priorityLabel(value),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : kDarkBrown.withOpacity(0.6),
+                color: isSelected ? color : kDarkBrown.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -295,7 +295,7 @@ class _SectionHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: kBurntOrange.withOpacity(0.05),
+        color: kBurntOrange.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

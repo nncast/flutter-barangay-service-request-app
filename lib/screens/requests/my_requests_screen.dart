@@ -48,7 +48,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> with SingleTickerPr
           tabAlignment: TabAlignment.start,
           indicatorColor: kWhite,
           labelColor: kWhite,
-          unselectedLabelColor: kWhite.withOpacity(0.7),
+          unselectedLabelColor: kWhite.withValues(alpha: 0.7),
           tabs: _tabs.map((status) {
             final label = status == 'all' ? 'All' : statusLabel(status);
             final count = countFor(status);
@@ -109,12 +109,12 @@ class _EmptyState extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         const SizedBox(height: 120),
-        Icon(Icons.inbox, size: 64, color: kDarkBrown.withOpacity(0.3)),
+        Icon(Icons.inbox, size: 64, color: kDarkBrown.withValues(alpha: 0.3)),
         const SizedBox(height: 16),
         Text(message, textAlign: TextAlign.center, style: const TextStyle(color: kDarkBrown)),
         if (hint != null) ...[
           const SizedBox(height: 8),
-          Text(hint!, textAlign: TextAlign.center, style: TextStyle(color: kDarkBrown.withOpacity(0.6))),
+          Text(hint!, textAlign: TextAlign.center, style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6))),
         ],
         if (onShowAll != null)
           Center(

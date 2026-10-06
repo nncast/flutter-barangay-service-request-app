@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     return Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: kWhite.withOpacity(0.9),
+                        color: kWhite.withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.account_balance, size: 80, color: kBurntOrange),
@@ -147,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: kWhite.withOpacity(0.2),
+                    color: kWhite.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -160,7 +160,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 const SizedBox(height: 20),
                 Text(
                   'Loading...',
-                  style: TextStyle(color: kWhite.withOpacity(0.8), fontSize: 12),
+                  style: TextStyle(color: kWhite.withValues(alpha: 0.8), fontSize: 12),
                 ),
               ],
             ),

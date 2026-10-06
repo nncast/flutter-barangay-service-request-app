@@ -109,7 +109,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search_off, size: 56, color: kDarkBrown.withOpacity(0.3)),
+                      Icon(Icons.search_off, size: 56, color: kDarkBrown.withValues(alpha: 0.3)),
                       const SizedBox(height: 12),
                       Text(_error ?? 'Request not found', style: const TextStyle(color: kDarkBrown)),
                       const SizedBox(height: 8),
@@ -172,7 +172,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _statusMessage(req.status),
-                  style: TextStyle(color: kDarkBrown.withOpacity(0.75), fontSize: 14, height: 1.4),
+                  style: TextStyle(color: kDarkBrown.withValues(alpha: 0.75), fontSize: 14, height: 1.4),
                 ),
                 if (req.remarks?.isNotEmpty ?? false) ...[
                   const SizedBox(height: 16),
@@ -180,7 +180,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: kCreamGold.withOpacity(0.3),
+                      color: kCreamGold.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: kCreamGold),
                     ),
@@ -213,7 +213,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Description',
-                  style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withOpacity(0.6)),
+                  style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withValues(alpha: 0.6)),
                 ),
                 const SizedBox(height: 4),
                 Text(req.description, style: const TextStyle(color: kDarkBrown, height: 1.4)),
@@ -245,7 +245,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             width: 90,
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withOpacity(0.6)),
+              style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withValues(alpha: 0.6)),
             ),
           ),
           Expanded(
@@ -294,7 +294,7 @@ class _SectionCard extends StatelessWidget {
                 ),
               ],
             ),
-            Divider(height: 24, color: kDarkBrown.withOpacity(0.15)),
+            Divider(height: 24, color: kDarkBrown.withValues(alpha: 0.15)),
             ...children,
           ],
         ),
@@ -333,13 +333,13 @@ class _HistoryEntry extends StatelessWidget {
                 if (log.note?.isNotEmpty ?? false)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: Text(log.note!, style: TextStyle(fontSize: 13, color: kDarkBrown.withOpacity(0.75))),
+                    child: Text(log.note!, style: TextStyle(fontSize: 13, color: kDarkBrown.withValues(alpha: 0.75))),
                   ),
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     by != null ? '${formatDateTime(log.createdAt)} · $by' : formatDateTime(log.createdAt),
-                    style: TextStyle(fontSize: 11, color: kDarkBrown.withOpacity(0.5)),
+                    style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.5)),
                   ),
                 ),
               ],
