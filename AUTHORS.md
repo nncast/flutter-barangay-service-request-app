@@ -7,7 +7,7 @@
 - Kimberly S. Bernabe | [Kimbernabe](https://github.com/Kimbernabe)
 - Janelle Ann F. Castillo | [nncast](https://github.com/nncast)
 - Chris Angelo T. Cauilan
-- Edgardo S. Espinocilla, Jr.
+- Edgardo S. Espinocilla, Jr. | [Yangchen21A](https://github.com/Yangchen21A)
 - Anselm Immanuel M. Gacrama
 - James Patrick R. Liquete
 
