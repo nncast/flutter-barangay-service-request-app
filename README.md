@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-complete-2772BD?style=flat-square" alt="status">
+  <img src="https://img.shields.io/badge/status-complete-BE5633?style=flat-square" alt="status">
   <img src="https://img.shields.io/badge/Flutter-3.24%2B-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter">
   <img src="https://img.shields.io/badge/Dart-3.5%2B-0175C2?style=flat-square&logo=dart&logoColor=white" alt="Dart">
   <img src="https://img.shields.io/badge/backend-Laravel%20API-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel API">
