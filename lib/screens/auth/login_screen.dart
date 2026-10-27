@@ -77,13 +77,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelStyle: const TextStyle(color: darkBrown),
                       prefixIcon: const Icon(Icons.email, color: burntOrange),
                       border: const OutlineInputBorder(
-                        borderSide: const BorderSide(color: darkBrown),
+                        borderSide: BorderSide(color: darkBrown),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                       ),
                       focusedBorder: const OutlineInputBorder(
-                        borderSide: const BorderSide(color: burntOrange, width: 2),
+                        borderSide: BorderSide(color: burntOrange, width: 2),
                       ),
                     ),
                     validator: (v) => (v ?? '').trim().isEmpty ? 'Enter email' : null,
@@ -104,13 +104,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                       border: const OutlineInputBorder(
-                        borderSide: const BorderSide(color: darkBrown),
+                        borderSide: BorderSide(color: darkBrown),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
                       ),
                       focusedBorder: const OutlineInputBorder(
-                        borderSide: const BorderSide(color: burntOrange, width: 2),
+                        borderSide: BorderSide(color: burntOrange, width: 2),
                       ),
                     ),
                     validator: (v) => (v ?? '').isEmpty ? 'Enter password' : null,
@@ -130,9 +130,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: const AlwaysStoppedAnimation<Color>(white),
+                        valueColor: AlwaysStoppedAnimation<Color>(white),
                       ),
                     )
                         : const Text('Login', style: TextStyle(fontSize: 16)),

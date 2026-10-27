@@ -74,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Personal Information',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 16),
                   _infoTile(Icons.email, 'Email', user?.email ?? 'Not set'),
@@ -83,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
                   const Divider(height: 32, color: darkBrown),
                   const Text(
                     'Account Settings',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBrown),
                   ),
                   const SizedBox(height: 16),
                   _actionTile(Icons.help_outline, 'Help & Support', () {
@@ -98,7 +98,7 @@ class ProfileScreen extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => confirmLogout(context),
                       icon: const Icon(Icons.logout, color: burntOrange),
-                      label: const Text('Logout', style: const TextStyle(color: burntOrange)),
+                      label: const Text('Logout', style: TextStyle(color: burntOrange)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         side: const BorderSide(color: burntOrange),
@@ -204,7 +204,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'A service request system for barangay residents to submit and track requests efficiently.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 color: darkBrown,
                 height: 1.4,
@@ -225,11 +225,11 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const Row(
                     children: [
-                      const Icon(Icons.code, size: 16, color: burntOrange),
+                      Icon(Icons.code, size: 16, color: burntOrange),
                       SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'License',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: darkBrown,
@@ -240,7 +240,7 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'MIT License',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: burntOrange,
@@ -276,11 +276,11 @@ class ProfileScreen extends StatelessWidget {
                   // Developer Credits
                   const Row(
                     children: [
-                      const Icon(Icons.people, size: 16, color: burntOrange),
+                      Icon(Icons.people, size: 16, color: burntOrange),
                       SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Developers',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: darkBrown,
@@ -348,9 +348,9 @@ class ProfileScreen extends StatelessWidget {
         ),
         title: const Row(
           children: [
-            const Icon(Icons.help_outline, color: burntOrange),
+            Icon(Icons.help_outline, color: burntOrange),
             SizedBox(width: 8),
-            const Text('Help & Support', style: const TextStyle(color: darkBrown)),
+            Text('Help & Support', style: TextStyle(color: darkBrown)),
           ],
         ),
         content: Column(
@@ -359,7 +359,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const Text(
               'How can we help you?',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkBrown),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkBrown),
             ),
             const SizedBox(height: 16),
             _helpOption(
@@ -433,7 +433,7 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text('Barangay Hall', style: const TextStyle(color: darkBrown)),
+        title: const Text('Barangay Hall', style: TextStyle(color: darkBrown)),
         content: SingleChildScrollView(
           child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -441,7 +441,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.location_on, color: burntOrange),
-              title: const Text('Address', style: const TextStyle(color: darkBrown)),
+              title: const Text('Address', style: TextStyle(color: darkBrown)),
               subtitle: Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: darkBrown.withValues(alpha: 0.7))),
               onTap: () {
                 final url = Uri.parse('https://www.google.com/maps/place/Dubinan+East+Barangay+Multi-purpose+Hall/@16.6891599,121.5401739,17z/data=!3m1!4b1!4m6!3m5!1s0x339006022a6053e3:0x56ebaaba7bd70229!8m2!3d16.6891599!4d121.5427488!16s%2Fg%2F1hjgkv_sh?entry=ttu&g_ep=EgoyMDI2MDUwMi4wIKXMDSoASAFQAw%3D%3D');
@@ -450,7 +450,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.phone, color: burntOrange),
-              title: const Text('Phone', style: const TextStyle(color: darkBrown)),
+              title: const Text('Phone', style: TextStyle(color: darkBrown)),
               subtitle: const Text('(02) 1234-5678'),
               onTap: () {
                 _launchUrl(Uri.parse('tel:0212345678'));
@@ -458,15 +458,15 @@ class ProfileScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.email, color: burntOrange),
-              title: const Text('Email', style: const TextStyle(color: darkBrown)),
+              title: const Text('Email', style: TextStyle(color: darkBrown)),
               subtitle: const Text(_hallEmail),
               onTap: () {
                 _launchUrl(Uri(scheme: 'mailto', path: _hallEmail));
               },
             ),
             const ListTile(
-              leading: const Icon(Icons.access_time, color: burntOrange),
-              title: const Text('Office Hours', style: const TextStyle(color: darkBrown)),
+              leading: Icon(Icons.access_time, color: burntOrange),
+              title: Text('Office Hours', style: TextStyle(color: darkBrown)),
               subtitle: Text('Monday - Friday: 8:00 AM - 5:00 PM'),
             ),
           ],
@@ -493,7 +493,7 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text('Frequently Asked Questions', style: const TextStyle(color: darkBrown)),
+        title: const Text('Frequently Asked Questions', style: TextStyle(color: darkBrown)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -635,11 +635,11 @@ class ProfileScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text('Report an Issue', style: const TextStyle(color: darkBrown)),
+        title: const Text('Report an Issue', style: TextStyle(color: darkBrown)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please describe the issue you are experiencing:', style: const TextStyle(color: darkBrown)),
+            const Text('Please describe the issue you are experiencing:', style: TextStyle(color: darkBrown)),
             const SizedBox(height: 16),
             TextField(
               controller: issueController,
