@@ -63,7 +63,7 @@ void main() {
     test('bad hex colors fall back instead of throwing', () {
       expect(colorFromHex('#zzzzzz'), kBurntOrange);
       expect(colorFromHex(null), kBurntOrange);
-      expect(colorFromHex('#2563EB').value, 0xFF2563EB);
+      expect(colorFromHex('#2563EB').toARGB32(), 0xFF2563EB);
     });
 
     test('dates are shown in local time', () {
