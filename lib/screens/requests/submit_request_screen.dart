@@ -56,9 +56,11 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
       return;
     }
 
+    // The title is optional: most requests are just "Barangay Clearance" and so on
+    final title = _titleCtrl.text.trim();
     final ok = await rp.submitRequest({
       'category_id': _selectedCategoryId,
-      'title': _titleCtrl.text.trim(),
+      'title': title.isNotEmpty ? title : rp.categories.firstWhere((c) => c.id == _selectedCategoryId).name,
       'description': _descCtrl.text.trim(),
       'priority': _priority,
     });
@@ -153,17 +155,16 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                   ),
                 const SizedBox(height: 24),
 
-                const _SectionHeader(icon: Icons.title, label: 'Request Title', required: true),
+                const _SectionHeader(icon: Icons.title, label: 'Request Title (optional)'),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _titleCtrl,
                   maxLength: 255,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: _inputDecoration('e.g., Request for Barangay Clearance', icon: Icons.edit_note),
+                  decoration: _inputDecoration('Leave blank to use the service name', icon: Icons.edit_note),
                   validator: (v) {
                     final value = (v ?? '').trim();
-                    if (value.isEmpty) return 'Title is required';
-                    if (value.length < 5) return 'Title must be at least 5 characters';
+                    if (value.isNotEmpty && value.length < 5) return 'Title must be at least 5 characters';
                     return null;
                   },
                 ),
