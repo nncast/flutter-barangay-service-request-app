@@ -43,7 +43,7 @@ The app talks to the [Laravel API backend](https://github.com/nncast/laravel-bar
 
 **Residents**
 - Register and log in
-- Submit a request: pick a service, add a title, description and priority
+- Submit a request: pick a service (straight from its tile on the dashboard), describe it and set a priority; the title is optional and defaults to the service name
 - Track each request through **Pending → In Review → Approved → Processing → Completed** (or Rejected), with staff remarks and a dated status history
 - Cancel a request while it is still pending
 - Notifications whenever staff update a request; tap one to open the request
@@ -51,7 +51,7 @@ The app talks to the [Laravel API backend](https://github.com/nncast/laravel-bar
 **Staff and admins**
 - Dashboard with counts for every status, plus today / this week / this month
 - All requests with search and status filters
-- Update a request's status and leave remarks for the resident
+- Move a request on in one tap from its details (**Start review**, **Approve**, **Reject**, **Start processing**, **Mark completed**) with an optional note for the resident; any other status is under ⋯
 - View users (staff) or add, edit, deactivate and delete users (admin)
 
 ## Roles
