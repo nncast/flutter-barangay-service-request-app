@@ -361,7 +361,57 @@ class AdminRequestCard extends StatelessWidget {
 void showRequestDetails(BuildContext context, RequestModel request) {
   showDialog<void>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
+    builder: (_) => _RequestDetailsDialog(request: request, parentContext: context),
+  );
+}
+
+/// The usual next steps from each status, offered as one-tap buttons (the last is the main one).
+const Map<String, List<String>> _nextSteps = {
+  'pending': ['rejected', 'in_review'],
+  'in_review': ['rejected', 'approved'],
+  'approved': ['processing', 'completed'],
+  'processing': ['completed'],
+};
+
+const Map<String, String> _stepLabels = {
+  'in_review': 'Start review',
+  'approved': 'Approve',
+  'rejected': 'Reject',
+  'processing': 'Start processing',
+  'completed': 'Mark completed',
+};
+
+class _RequestDetailsDialog extends StatefulWidget {
+  final RequestModel request;
+  // The screen behind the dialog, which outlives it for the snackbar
+  final BuildContext parentContext;
+
+  const _RequestDetailsDialog({required this.request, required this.parentContext});
+
+  @override
+  State<_RequestDetailsDialog> createState() => _RequestDetailsDialogState();
+}
+
+class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  void _apply(String status) {
+    Navigator.pop(context);
+    applyStatus(widget.parentContext, widget.request, status, _note.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final request = widget.request;
+    final dialogContext = context;
+    final steps = request.canUpdateStatus ? (_nextSteps[request.status] ?? const <String>[]) : const <String>[];
+    return AlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(24, 16, 8, 0),
       title: Row(
         children: [
@@ -453,43 +503,89 @@ void showRequestDetails(BuildContext context, RequestModel request) {
                   isLongText: true,
                 ),
               if (request.logs.isNotEmpty) _HistorySection(logs: request.logs),
+              if (steps.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _note,
+                  maxLength: 1000,
+                  minLines: 1,
+                  maxLines: 3,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    labelText: 'Note for the resident',
+                    hintText: 'Optional, e.g. Bring a valid ID',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          style: TextButton.styleFrom(foregroundColor: kDarkBrown),
-          child: const Text('Close'),
-        ),
-        if (request.canUpdateStatus)
-          ElevatedButton.icon(
+        if (request.canUpdateStatus && steps.isEmpty)
+          TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              showStatusDialog(context, request);
+              showStatusDialog(widget.parentContext, request);
             },
-            icon: const Icon(Icons.edit, size: 18),
-            label: const Text('Update Status'),
+            style: TextButton.styleFrom(foregroundColor: kDarkBrown),
+            child: const Text('Change status'),
+          ),
+        if (steps.isNotEmpty)
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Other status',
+                icon: const Icon(Icons.more_horiz, color: kDarkBrown),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  showStatusDialog(widget.parentContext, request);
+                },
+              ),
+              for (final step in steps) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: step == steps.last
+                      ? ElevatedButton(
+                          onPressed: () => _apply(step),
+                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
+                          child: Text(_stepLabels[step]!, textAlign: TextAlign.center),
+                        )
+                      : OutlinedButton(
+                          onPressed: () => _apply(step),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            foregroundColor: statusColor(step),
+                            side: BorderSide(color: statusColor(step).withValues(alpha: 0.5)),
+                          ),
+                          child: Text(_stepLabels[step]!, textAlign: TextAlign.center),
+                        ),
+                ),
+              ],
+            ],
           ),
       ],
-    ),
-  );
+    );
+  }
 }
 
 Future<void> showStatusDialog(BuildContext context, RequestModel request) async {
+  final result = await showDialog<(String, String)>(
+    context: context,
+    builder: (_) => _StatusDialog(request: request),
+  );
+  if (result == null || !context.mounted) return;
+  final (status, remarks) = result;
+  await applyStatus(context, request, status, remarks);
+}
+
+Future<void> applyStatus(BuildContext context, RequestModel request, String status, String remarks) async {
   // Look these up before any await: `context` may be gone by the time the
   // request finishes, but the messenger and provider live above the routes.
   final messenger = ScaffoldMessenger.of(context);
   final requestProvider = context.read<RequestProvider>();
 
-  final result = await showDialog<(String, String)>(
-    context: context,
-    builder: (_) => _StatusDialog(request: request),
-  );
-  if (result == null) return;
-
-  final (status, remarks) = result;
   final ok = await requestProvider.updateStatus(request.id, status, remarks: remarks);
 
   messenger
