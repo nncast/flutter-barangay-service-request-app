@@ -70,14 +70,14 @@ class NotificationsScreen extends StatelessWidget {
                         notification.title,
                         style: TextStyle(
                           fontWeight: notification.isRead ? FontWeight.w600 : FontWeight.w800,
-                          color: kBlack,
+                          color: kCharcoal,
                         ),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 2),
-                          Text(notification.body, style: TextStyle(color: kBlack.withValues(alpha: 0.75))),
+                          Text(notification.body, style: const TextStyle(color: kGray)),
                           const SizedBox(height: 4),
                           Text(
                             formatRelative(notification.createdAt),
@@ -90,7 +90,7 @@ class NotificationsScreen extends StatelessWidget {
                           : Container(
                               width: 10,
                               height: 10,
-                              decoration: const BoxDecoration(color: kOrange, shape: BoxShape.circle),
+                              decoration: const BoxDecoration(color: kOrangeDark, shape: BoxShape.circle),
                             ),
                     ),
                   );

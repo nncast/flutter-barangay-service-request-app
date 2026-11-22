@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:barangay_app/core/models.dart';
@@ -61,8 +62,8 @@ void main() {
     });
 
     test('labels on light colors are black, on dark colors white', () {
-      expect(onColor(statusColor('pending')), kBlack);
-      expect(onColor(statusColor('approved')), kBlack);
+      expect(onColor(statusColor('pending')), kCharcoal);
+      expect(onColor(statusColor('approved')), kCharcoal);
       expect(onColor(statusColor('completed')), kWhite);
       expect(onColor(statusColor('rejected')), kWhite);
     });
@@ -72,6 +73,39 @@ void main() {
       final local = utc.toLocal();
       final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
       expect(formatDateTime(utc.toIso8601String()), contains('$hour:05'));
+    });
+  });
+
+  group('WCAG AA contrast', () {
+    Matcher atLeast(double ratio) => greaterThanOrEqualTo(ratio);
+
+    test('every status, priority and role tag is readable (4.5:1)', () {
+      final fills = [
+        ...kRequestStatuses.map(statusColor),
+        ...['low', 'normal', 'high', 'urgent'].map(priorityColor),
+        kCharcoal, kOrange, kYellow, kLine, kMuted, // roles and "You"
+      ];
+      for (final fill in fills) {
+        expect(contrastRatio(fill, onColor(fill)), atLeast(4.5), reason: '$fill');
+      }
+    });
+
+    test('body and secondary text on every background (4.5:1)', () {
+      for (final bg in [kWhite, kSurface, kYellowSoft]) {
+        expect(contrastRatio(kCharcoal, bg), atLeast(4.5));
+        expect(contrastRatio(kGray, bg), atLeast(4.5));
+      }
+      expect(contrastRatio(kRed, kWhite), atLeast(4.5)); // Reject, Delete, required *
+      expect(contrastRatio(kCharcoal, kOrange), atLeast(4.5)); // button labels
+      expect(contrastRatio(kYellow, kCharcoal), atLeast(4.5)); // hero card counts
+      expect(contrastRatio(Color.alphaBlend(kWhite.withValues(alpha: 0.6), kCharcoal), kCharcoal), atLeast(4.5)); // hero labels
+    });
+
+    test('field outlines and state indicators (3:1)', () {
+      for (final bg in [kWhite, kSurface]) {
+        expect(contrastRatio(kOutline, bg), atLeast(3));
+        expect(contrastRatio(kOrangeDark, bg), atLeast(3)); // unread dot, spinner
+      }
     });
   });
 

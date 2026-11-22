@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 // Shared colors and formatting so every screen shows statuses the same way.
 
-// Flat palette: black and white, orange for actions, yellow for highlights.
+// Flat palette: charcoal (never pure black) and white, orange for actions,
+// yellow for highlights.
 const Color kWhite = Color(0xFFFFFFFF);
-const Color kBlack = Color(0xFF111111);
+const Color kCharcoal = Color(0xFF2A2826);
 const Color kOrange = Color(0xFFF97316);
 const Color kYellow = Color(0xFFFFC72C);
 const Color kYellowSoft = Color(0xFFFFF4CC);
@@ -12,12 +13,19 @@ const Color kGray = Color(0xFF6B6B6B);
 const Color kLine = Color(0xFFE6E6E6);
 const Color kSurface = Color(0xFFF5F5F5);
 const Color kRed = Color(0xFFDC2626);
+const Color kOrangeDark = Color(0xFFC2410C);
+/// Field outlines: at least 3:1 against white and the gray fills (WCAG 1.4.11).
+const Color kOutline = Color(0xFF858585);
 const Color kMuted = Color(0xFF9E9E9E);
 
-/// Black or white, whichever has the higher contrast on [color]. Above a
-/// luminance of 0.179 black wins (Flutter's brightness estimate would put
-/// white on the orange, at 2.8:1).
-Color onColor(Color color) => color.computeLuminance() > 0.179 ? kBlack : kWhite;
+/// WCAG contrast ratio, from 1 to 21. Text needs 4.5 (AA), icons and outlines 3.
+double contrastRatio(Color a, Color b) {
+  final x = a.computeLuminance() + 0.05, y = b.computeLuminance() + 0.05;
+  return x > y ? x / y : y / x;
+}
+
+/// Charcoal or white, whichever has the higher contrast on [color].
+Color onColor(Color color) => contrastRatio(color, kCharcoal) >= contrastRatio(color, kWhite) ? kCharcoal : kWhite;
 
 /// Request statuses in workflow order. `cancelled` is set by residents only.
 const List<String> kRequestStatuses = [
@@ -64,7 +72,7 @@ String statusLabel(String? status) {
   }
 }
 
-/// Yellow → orange → black as a request moves along; red and gray when it stops.
+/// Yellow → orange → charcoal as a request moves along; red and gray when it stops.
 Color statusColor(String? status) {
   switch (status) {
     case 'pending':
@@ -74,9 +82,9 @@ Color statusColor(String? status) {
     case 'approved':
       return kOrange;
     case 'processing':
-      return const Color(0xFFC2410C);
+      return kOrangeDark;
     case 'completed':
-      return kBlack;
+      return kCharcoal;
     case 'rejected':
       return kRed;
     default:
@@ -256,7 +264,7 @@ class SectionTitle extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: kBlack, letterSpacing: -0.6),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: kCharcoal, letterSpacing: -0.6),
           ),
         ),
         if (trailing != null) trailing!,
@@ -283,7 +291,7 @@ class Greeting extends StatelessWidget {
             style: const TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w700,
-              color: kBlack,
+              color: kCharcoal,
               height: 1.05,
               letterSpacing: -1.2,
             ),
@@ -310,14 +318,14 @@ class ArrowButton extends StatelessWidget {
       icon: const Icon(Icons.arrow_forward),
       style: IconButton.styleFrom(
         backgroundColor: kOrange,
-        foregroundColor: kBlack,
+        foregroundColor: kCharcoal,
         fixedSize: const Size(52, 52),
       ),
     );
   }
 }
 
-/// Black card with a row of counts, a big title and an arrow; the whole card is tappable.
+/// Charcoal card with a row of counts, a big title and an arrow; the whole card is tappable.
 class HeroCard extends StatelessWidget {
   final List<(String, int)> stats;
   final String title;
@@ -328,7 +336,7 @@ class HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: kBlack,
+      color: kCharcoal,
       borderRadius: BorderRadius.circular(26),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -435,7 +443,7 @@ class EmptyState extends StatelessWidget {
         Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kBlack),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kCharcoal),
         ),
         if (hint != null) ...[
           const SizedBox(height: 6),

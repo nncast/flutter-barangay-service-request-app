@@ -114,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-/// Flat look: no shadows or tints, thin gray borders, black text,
+/// Flat look: no shadows or tints, charcoal text,
 /// orange for actions and yellow for highlights.
 ThemeData _flatTheme() {
   final radius = BorderRadius.circular(16);
@@ -127,14 +127,14 @@ ThemeData _flatTheme() {
       seedColor: kOrange,
       dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
       primary: kOrange,
-      onPrimary: kBlack,
+      onPrimary: kCharcoal,
       secondary: kYellow,
-      onSecondary: kBlack,
+      onSecondary: kCharcoal,
       error: kRed,
       surface: kWhite,
-      onSurface: kBlack,
+      onSurface: kCharcoal,
       onSurfaceVariant: kGray,
-      outline: kLine,
+      outline: kOutline,
       outlineVariant: kLine,
       surfaceContainerLowest: kWhite,
       surfaceContainerLow: kWhite,
@@ -145,12 +145,12 @@ ThemeData _flatTheme() {
     scaffoldBackgroundColor: kWhite,
     appBarTheme: const AppBarTheme(
       backgroundColor: kWhite,
-      foregroundColor: kBlack,
+      foregroundColor: kCharcoal,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: kBlack, letterSpacing: -0.6),
+      titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: kCharcoal, letterSpacing: -0.6),
     ),
     // Gray tiles on white, no borders or shadows.
     cardTheme: CardThemeData(
@@ -163,7 +163,7 @@ ThemeData _flatTheme() {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: kOrange,
-        foregroundColor: kBlack,
+        foregroundColor: kCharcoal,
         disabledBackgroundColor: kLine,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -173,8 +173,8 @@ ThemeData _flatTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: kBlack,
-        side: const BorderSide(color: kBlack, width: 1.2),
+        foregroundColor: kCharcoal,
+        side: const BorderSide(color: kCharcoal, width: 1.2),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         shape: const StadiumBorder(),
@@ -182,15 +182,15 @@ ThemeData _flatTheme() {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: kBlack,
+        foregroundColor: kCharcoal,
         textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
         backgroundColor: kSurface,
-        foregroundColor: kBlack,
-        selectedBackgroundColor: kBlack,
+        foregroundColor: kCharcoal,
+        selectedBackgroundColor: kCharcoal,
         selectedForegroundColor: kWhite,
         side: BorderSide.none,
         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
@@ -199,7 +199,7 @@ ThemeData _flatTheme() {
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: kOrange,
-      foregroundColor: kBlack,
+      foregroundColor: kCharcoal,
       elevation: 0,
       focusElevation: 0,
       hoverElevation: 0,
@@ -213,12 +213,12 @@ ThemeData _flatTheme() {
       prefixIconColor: kGray,
       suffixIconColor: kGray,
       labelStyle: const TextStyle(color: kGray),
-      floatingLabelStyle: const TextStyle(color: kBlack, fontWeight: FontWeight.w600),
+      floatingLabelStyle: const TextStyle(color: kCharcoal, fontWeight: FontWeight.w600),
       hintStyle: const TextStyle(color: kGray),
       border: inputBorder(),
-      enabledBorder: inputBorder(),
+      enabledBorder: inputBorder(const BorderSide(color: kOutline)),
       disabledBorder: inputBorder(),
-      focusedBorder: inputBorder(const BorderSide(color: kBlack, width: 1.5)),
+      focusedBorder: inputBorder(const BorderSide(color: kCharcoal, width: 1.5)),
       errorBorder: inputBorder(const BorderSide(color: kRed)),
       focusedErrorBorder: inputBorder(const BorderSide(color: kRed, width: 1.5)),
     ),
@@ -227,38 +227,43 @@ ThemeData _flatTheme() {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       height: 68,
-      indicatorColor: kBlack,
+      indicatorColor: kCharcoal,
       iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(color: states.contains(WidgetState.selected) ? kWhite : kBlack),
+        (states) => IconThemeData(color: states.contains(WidgetState.selected) ? kWhite : kCharcoal),
       ),
       labelTextStyle: const WidgetStatePropertyAll(
-        TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kBlack),
+        TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kCharcoal),
       ),
     ),
-    // Black pill on the selected tab.
+    // Charcoal pill on the selected tab.
     tabBarTheme: const TabBarThemeData(
       labelColor: kWhite,
       unselectedLabelColor: kGray,
-      indicator: ShapeDecoration(color: kBlack, shape: StadiumBorder()),
+      indicator: ShapeDecoration(color: kCharcoal, shape: StadiumBorder()),
       indicatorSize: TabBarIndicatorSize.tab,
       dividerColor: Colors.transparent,
       labelStyle: TextStyle(fontWeight: FontWeight.w700),
       unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500),
     ),
-    badgeTheme: const BadgeThemeData(backgroundColor: kOrange, textColor: kBlack),
-    progressIndicatorTheme: const ProgressIndicatorThemeData(color: kOrange),
+    badgeTheme: const BadgeThemeData(backgroundColor: kOrange, textColor: kCharcoal),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: kOrangeDark),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? kWhite : kOutline),
+      trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? kCharcoal : kWhite),
+      trackOutlineColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? kCharcoal : kOutline),
+    ),
     dialogTheme: DialogThemeData(
       backgroundColor: kWhite,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      titleTextStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: kBlack),
-      contentTextStyle: const TextStyle(fontSize: 14, color: kBlack, height: 1.4),
+      titleTextStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: kCharcoal),
+      contentTextStyle: const TextStyle(fontSize: 14, color: kCharcoal, height: 1.4),
     ),
     popupMenuTheme: const PopupMenuThemeData(color: kWhite, surfaceTintColor: Colors.transparent),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: kBlack,
+      backgroundColor: kCharcoal,
       contentTextStyle: const TextStyle(color: kWhite),
       shape: RoundedRectangleBorder(borderRadius: radius),
     ),

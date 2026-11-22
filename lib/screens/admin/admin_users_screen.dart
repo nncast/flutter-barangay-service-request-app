@@ -9,7 +9,7 @@ import '../../core/ui_helpers.dart';
 Color _roleColor(String role) {
   switch (role) {
     case 'admin':
-      return kBlack;
+      return kCharcoal;
     case 'staff':
       return kOrange;
     case 'resident':
@@ -154,7 +154,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               ),
               child: const Text(
                 'View only — only admins can add, edit or delete users.',
-                style: TextStyle(fontSize: 12, color: kBlack),
+                style: TextStyle(fontSize: 12, color: kCharcoal),
               ),
             ),
           Expanded(
@@ -204,7 +204,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         avatar: color == null ? null : Dot(color),
         label: Text(
           '$label  $count',
-          style: const TextStyle(fontSize: 12, color: kBlack, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 12, color: kCharcoal, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -248,7 +248,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               child: const Text(
                 'Their own requests and notifications are deleted too. This cannot be undone. '
                 'To keep their records, deactivate the account instead (Edit → Active).',
-                style: TextStyle(fontSize: 12, color: kBlack),
+                style: TextStyle(fontSize: 12, color: kCharcoal),
               ),
             ),
             if (user.isAdmin) ...[
@@ -390,7 +390,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 if (_isEdit && !widget.isCurrentUser)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Active', style: TextStyle(color: kBlack)),
+                    title: const Text('Active', style: TextStyle(color: kCharcoal)),
                     subtitle: Text(
                       _active ? 'Can sign in' : 'Signed out and blocked from signing in',
                       style: const TextStyle(fontSize: 12, color: kGray),
@@ -447,7 +447,7 @@ class _UserCard extends StatelessWidget {
             user.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w700, color: kBlack),
+            style: const TextStyle(fontWeight: FontWeight.w700, color: kCharcoal),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

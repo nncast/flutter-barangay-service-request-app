@@ -31,10 +31,10 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     user?.name ?? 'User',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.3),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.3),
                   ),
                   const SizedBox(height: 8),
-                  Tag(label: user?.role.toUpperCase() ?? 'RESIDENT', color: kBlack),
+                  Tag(label: user?.role.toUpperCase() ?? 'RESIDENT', color: kCharcoal),
                 ],
               ),
             ),
@@ -90,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text(label, style: const TextStyle(fontSize: 12, color: kGray)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kBlack)),
+                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kCharcoal)),
               ],
             ),
           ),
@@ -103,7 +103,7 @@ class ProfileScreen extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: IconBox(icon, size: 40),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: kBlack)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: kCharcoal)),
       trailing: const Icon(Icons.chevron_right, color: kGray),
       onTap: onTap,
     );
@@ -123,24 +123,24 @@ class ProfileScreen extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: kBlack.withValues(alpha: 0.1),
+                    color: kCharcoal.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.account_balance,
                     size: 48,
-                    color: kBlack,
+                    color: kCharcoal,
                   ),
                 );
               },
             ),
             const SizedBox(height: 12),
             const SizedBox(height: 4),
-            Text(
+            const Text(
               'Version 1.0.0',
               style: TextStyle(
                 fontSize: 12,
-                color: kBlack.withValues(alpha: 0.6),
+                color: kGray,
               ),
             ),
           ],
@@ -155,7 +155,7 @@ class ProfileScreen extends StatelessWidget {
               'A service request system for barangay residents to submit and track requests efficiently.',
               style: TextStyle(
                 fontSize: 13,
-                color: kBlack,
+                color: kCharcoal,
                 height: 1.4,
               ),
               textAlign: TextAlign.center,
@@ -170,14 +170,14 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.code, size: 16, color: kBlack),
+                      Icon(Icons.code, size: 16, color: kCharcoal),
                       SizedBox(width: 8),
                       Text(
                         'License',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: kBlack,
+                          color: kCharcoal,
                         ),
                       ),
                     ],
@@ -188,47 +188,47 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: kBlack,
+                      color: kCharcoal,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  const Text(
                     'Copyright © 2026 Barangay Service System',
                     style: TextStyle(
                       fontSize: 11,
-                      color: kBlack.withValues(alpha: 0.7),
+                      color: kGray,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files to use, copy, modify, merge, publish, and distribute copies of the Software.',
                     style: TextStyle(
                       fontSize: 11,
-                      color: kBlack.withValues(alpha: 0.6),
+                      color: kGray,
                       height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'The software is provided "as is", without warranty of any kind.',
                     style: TextStyle(
                       fontSize: 11,
                       fontStyle: FontStyle.italic,
-                      color: kBlack.withValues(alpha: 0.5),
+                      color: kGray,
                     ),
                   ),
                   const SizedBox(height: 8),
                   // Developer Credits
                   const Row(
                     children: [
-                      Icon(Icons.people, size: 16, color: kBlack),
+                      Icon(Icons.people, size: 16, color: kCharcoal),
                       SizedBox(width: 8),
                       Text(
                         'Developers',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: kBlack,
+                          color: kCharcoal,
                         ),
                       ),
                     ],
@@ -271,7 +271,7 @@ class ProfileScreen extends StatelessWidget {
         name,
         style: const TextStyle(
           fontSize: 10,
-          color: kBlack,
+          color: kCharcoal,
         ),
       ),
     );
@@ -283,7 +283,7 @@ class ProfileScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.help_outline, color: kBlack),
+            Icon(Icons.help_outline, color: kCharcoal),
             SizedBox(width: 8),
             Text('Help & Support'),
           ],
@@ -294,7 +294,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const Text(
               'How can we help you?',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kBlack),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kCharcoal),
             ),
             const SizedBox(height: 16),
             _helpOption(
@@ -349,10 +349,10 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: kBlack, size: 28),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: kBlack)),
-      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: kBlack.withValues(alpha: 0.7))),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: kBlack.withValues(alpha: 0.5)),
+      leading: Icon(icon, color: kCharcoal, size: 28),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: kCharcoal)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: kGray)),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: kGray),
       onTap: onTap,
     );
   }
@@ -368,16 +368,16 @@ class ProfileScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: const Icon(Icons.location_on, color: kBlack),
+              leading: const Icon(Icons.location_on, color: kCharcoal),
               title: const Text('Address'),
-              subtitle: Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: kBlack.withValues(alpha: 0.7))),
+              subtitle: const Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: kGray)),
               onTap: () {
                 final url = Uri.parse('https://www.google.com/maps/place/Dubinan+East+Barangay+Multi-purpose+Hall/@16.6891599,121.5401739,17z/data=!3m1!4b1!4m6!3m5!1s0x339006022a6053e3:0x56ebaaba7bd70229!8m2!3d16.6891599!4d121.5427488!16s%2Fg%2F1hjgkv_sh?entry=ttu&g_ep=EgoyMDI2MDUwMi4wIKXMDSoASAFQAw%3D%3D');
                 _launchUrl(url);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.phone, color: kBlack),
+              leading: const Icon(Icons.phone, color: kCharcoal),
               title: const Text('Phone'),
               subtitle: const Text('(02) 1234-5678'),
               onTap: () {
@@ -385,7 +385,7 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.email, color: kBlack),
+              leading: const Icon(Icons.email, color: kCharcoal),
               title: const Text('Email'),
               subtitle: const Text(_hallEmail),
               onTap: () {
@@ -393,7 +393,7 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const ListTile(
-              leading: Icon(Icons.access_time, color: kBlack),
+              leading: Icon(Icons.access_time, color: kCharcoal),
               title: Text('Office Hours'),
               subtitle: Text('Monday - Friday: 8:00 AM - 5:00 PM'),
             ),
@@ -476,7 +476,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: kBlack,
+                  color: kCharcoal,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
@@ -497,7 +497,7 @@ class ProfileScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: kBlack,
+                    color: kCharcoal,
                   ),
                 ),
               ),
@@ -518,7 +518,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     'A',
                     style: TextStyle(
-                      color: kBlack,
+                      color: kCharcoal,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -529,9 +529,9 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   answer,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
-                    color: kBlack.withValues(alpha: 0.8),
+                    color: kGray,
                     height: 1.4,
                   ),
                 ),

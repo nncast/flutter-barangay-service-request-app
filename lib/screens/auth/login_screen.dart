@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 48),
                     const Text(
                       'Welcome back',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.5),
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.5),
                     ),
                     const SizedBox(height: 4),
                     const Text('Log in to request and track barangay services.', style: TextStyle(color: kGray)),
@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: kBlack),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: kCharcoal),
                             )
                           : const Text('Login'),
                     ),

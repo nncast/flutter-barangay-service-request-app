@@ -144,7 +144,7 @@ class AdminDashboardPage extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Center(
-                      child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kBlack)),
+                      child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kCharcoal)),
                     ),
                   ),
                 )
@@ -180,7 +180,7 @@ class _AdminStatCard extends StatelessWidget {
             children: [
               Text(
                 '$value',
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: kBlack, height: 1.1),
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: kCharcoal, height: 1.1),
               ),
               const SizedBox(height: 6),
               Row(
@@ -225,7 +225,7 @@ class AdminRequestCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconBox(categoryIcon(request.category?.icon), size: 44, color: kBlack),
+              IconBox(categoryIcon(request.category?.icon), size: 44, color: kCharcoal),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -235,14 +235,14 @@ class AdminRequestCard extends StatelessWidget {
                       request.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kBlack),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kCharcoal),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${request.user?.name ?? 'Unknown'} · ${request.category?.name ?? 'General'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, color: kBlack),
+                      style: const TextStyle(fontSize: 13, color: kCharcoal),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -262,7 +262,7 @@ class AdminRequestCard extends StatelessWidget {
                     Tag(
                       label: priorityLabel(request.priority).toUpperCase(),
                       color: priorityColor(request.priority),
-                      fontSize: 9,
+                      fontSize: 10,
                     ),
                   ],
                 ],
@@ -336,7 +336,7 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
             child: Text('Request Details'),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: kBlack),
+            icon: const Icon(Icons.close, color: kCharcoal),
             onPressed: () => Navigator.pop(dialogContext),
           ),
         ],
@@ -359,7 +359,7 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
                         children: [
                           const Text('Tracking Code', style: TextStyle(fontSize: 11, color: kGray)),
                           Text(request.trackingCode,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: kBlack)),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: kCharcoal)),
                         ],
                       ),
                     ),
@@ -508,7 +508,7 @@ Future<void> applyStatus(BuildContext context, RequestModel request, String stat
       content: Text(ok
           ? '${request.trackingCode} is now ${statusLabel(status)}'
           : (requestProvider.error ?? 'Failed to update status')),
-      backgroundColor: ok ? kBlack : kRed,
+      backgroundColor: ok ? kCharcoal : kRed,
     ));
 }
 
@@ -556,7 +556,7 @@ class _StatusDialogState extends State<_StatusDialog> {
                             children: [
                               Dot(statusColor(s)),
                               const SizedBox(width: 8),
-                              Text(statusLabel(s), style: const TextStyle(color: kBlack)),
+                              Text(statusLabel(s), style: const TextStyle(color: kCharcoal)),
                             ],
                           ),
                         ))
@@ -628,7 +628,7 @@ class _InfoSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: isLongText ? 13 : 14,
                     fontWeight: isLongText ? FontWeight.normal : FontWeight.w600,
-                    color: kBlack,
+                    color: kCharcoal,
                     height: isLongText ? 1.4 : null,
                   ),
                 ),
@@ -659,9 +659,9 @@ class _HistorySection extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.history, size: 18, color: kBlack),
+              Icon(Icons.history, size: 18, color: kCharcoal),
               SizedBox(width: 8),
-              Text('Status History', style: TextStyle(fontWeight: FontWeight.w800, color: kBlack)),
+              Text('Status History', style: TextStyle(fontWeight: FontWeight.w800, color: kCharcoal)),
             ],
           ),
           const SizedBox(height: 12),
@@ -675,7 +675,7 @@ class _HistorySection extends StatelessWidget {
                   if (log.note?.isNotEmpty ?? false)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text(log.note!, style: const TextStyle(fontSize: 12, color: kBlack)),
+                      child: Text(log.note!, style: const TextStyle(fontSize: 12, color: kCharcoal)),
                     ),
                   const SizedBox(height: 2),
                   Text(
@@ -831,13 +831,13 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
 
     return FilterChip(
       label: Text('${status == 'all' ? 'All' : statusLabel(status)} ($count)'),
-      labelStyle: TextStyle(color: isSelected ? kWhite : kBlack, fontWeight: FontWeight.w600),
+      labelStyle: TextStyle(color: isSelected ? kWhite : kCharcoal, fontWeight: FontWeight.w600),
       avatar: status == 'all' ? null : Dot(statusColor(status)),
       selected: isSelected,
       showCheckmark: false,
       onSelected: (_) => widget.filter.value = status,
       backgroundColor: kSurface,
-      selectedColor: kBlack,
+      selectedColor: kCharcoal,
       side: BorderSide.none,
       shape: const StadiumBorder(),
     );
@@ -862,12 +862,12 @@ class AdminProfilePage extends StatelessWidget {
           Text(
             user?.name ?? 'Admin',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.3),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.3),
           ),
           const SizedBox(height: 4),
           Text(user?.email ?? '', textAlign: TextAlign.center, style: const TextStyle(color: kGray)),
           const SizedBox(height: 12),
-          Center(child: Tag(label: (user?.roleLabel ?? 'Admin').toUpperCase(), color: kBlack)),
+          Center(child: Tag(label: (user?.roleLabel ?? 'Admin').toUpperCase(), color: kCharcoal)),
           const SizedBox(height: 40),
           OutlinedButton.icon(
             onPressed: () => confirmLogout(context),

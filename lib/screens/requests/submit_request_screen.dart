@@ -90,7 +90,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                   Row(
                     children: [
                       const Expanded(
-                        child: Text('Couldn\'t load services.', style: TextStyle(color: kBlack)),
+                        child: Text('Couldn\'t load services.', style: TextStyle(color: kCharcoal)),
                       ),
                       TextButton(
                         onPressed: rp.fetchCategories,
@@ -106,7 +106,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                     runSpacing: 8,
                     children: rp.categories.map((cat) {
                       final isSelected = _selectedCategoryId == cat.id;
-                      final fg = isSelected ? kWhite : kBlack;
+                      final fg = isSelected ? kWhite : kCharcoal;
                       return FilterChip(
                         label: Text(cat.name),
                         labelStyle: TextStyle(color: fg, fontWeight: FontWeight.w600),
@@ -114,7 +114,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _selectedCategoryId = cat.id),
                         backgroundColor: kSurface,
-                        selectedColor: kBlack,
+                        selectedColor: kCharcoal,
                         avatar: Icon(categoryIcon(cat.icon), size: 16, color: fg),
                         side: BorderSide.none,
                         shape: const StadiumBorder(),
@@ -177,14 +177,14 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(Icons.info_outline, color: kBlack, size: 20),
-                      const SizedBox(width: 12),
+                      Icon(Icons.info_outline, color: kCharcoal, size: 20),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Your request will be reviewed by barangay staff. You will receive notifications when its status changes.',
-                          style: TextStyle(fontSize: 12, color: kBlack.withValues(alpha: 0.8)),
+                          style: TextStyle(fontSize: 12, color: kGray),
                         ),
                       ),
                     ],
@@ -200,7 +200,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                         ? const SizedBox(
                             height: 18,
                             width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: kBlack),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: kCharcoal),
                           )
                         : const Icon(Icons.send, size: 18),
                     label: Text(
@@ -232,7 +232,7 @@ class _SectionHeader extends StatelessWidget {
         text: label,
         children: [if (required) const TextSpan(text: ' *', style: TextStyle(color: kRed))],
       ),
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kBlack),
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kCharcoal),
     );
   }
 }
