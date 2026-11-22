@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/session.dart';
+import '../../core/ui_helpers.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
 
@@ -16,11 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
-
-  // Color constants
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color burntOrange = Color(0xFFBE5633);
-  static const Color darkBrown = Color(0xFF46291D);
 
   @override
   void dispose() {
@@ -48,116 +44,83 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    return Scaffold(
-      backgroundColor: white,
+    return TopGlow(
+        child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo image instead of icon and text
-                  Image.asset(
-                    'assets/images/BSR_Logo_1.png',
-                    height: 100,
-                    width: 100,
-                  ),
-                  const SizedBox(height: 40),
-                  TextFormField(
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: const TextStyle(color: darkBrown),
-                      prefixIcon: const Icon(Icons.email, color: burntOrange),
-                      border: const OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: burntOrange, width: 2),
-                      ),
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Image.asset('assets/images/BSR_Logo_1.png', height: 96),
+                    const SizedBox(height: 48),
+                    const Text(
+                      'Welcome back',
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: kInk, letterSpacing: -0.5),
                     ),
-                    validator: (v) => (v ?? '').trim().isEmpty ? 'Enter email' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passCtrl,
-                    obscureText: _obscure,
-                    textInputAction: TextInputAction.done,
-                    autofillHints: const [AutofillHints.password],
-                    onFieldSubmitted: (_) => _login(),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: const TextStyle(color: darkBrown),
-                      prefixIcon: const Icon(Icons.lock, color: burntOrange),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: darkBrown),
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                      ),
-                      border: const OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: darkBrown.withValues(alpha: 0.3)),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: burntOrange, width: 2),
-                      ),
+                    const SizedBox(height: 4),
+                    const Text('Log in to request and track barangay services.', style: TextStyle(color: kGray)),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.email],
+                      decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail_outline)),
+                      validator: (v) => (v ?? '').trim().isEmpty ? 'Enter email' : null,
                     ),
-                    validator: (v) => (v ?? '').isEmpty ? 'Enter password' : null,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: auth.loading ? null : _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: burntOrange,
-                      foregroundColor: white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _passCtrl,
+                      obscureText: _obscure,
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.password],
+                      onFieldSubmitted: (_) => _login(),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                        ),
                       ),
+                      validator: (v) => (v ?? '').isEmpty ? 'Enter password' : null,
                     ),
-                    child: auth.loading
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(white),
-                      ),
-                    )
-                        : const Text('Login', style: TextStyle(fontSize: 16)),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      auth.clearError();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: burntOrange,
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: auth.loading ? null : _login,
+                      child: auth.loading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: kInk),
+                            )
+                          : const Text('Login'),
                     ),
-                    child: const Text('Create an account'),
-                  ),
-                  const SizedBox(height: 30),
-                ],
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () {
+                        auth.clearError();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                        );
+                      },
+                      child: const Text('Create an account'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    );
+    ));
   }
 }

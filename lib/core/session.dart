@@ -16,17 +16,15 @@ Future<void> confirmLogout(BuildContext context) async {
   final confirm = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Logout', style: TextStyle(color: kDarkBrown)),
-      content: const Text('Are you sure you want to logout?', style: TextStyle(color: kDarkBrown)),
+      title: const Text('Logout'),
+      content: const Text('Are you sure you want to logout?'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          style: TextButton.styleFrom(foregroundColor: kDarkBrown),
           child: const Text('Cancel'),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: () => Navigator.pop(ctx, true),
-          style: TextButton.styleFrom(foregroundColor: kBurntOrange),
           child: const Text('Logout'),
         ),
       ],
@@ -51,6 +49,6 @@ void showMessage(BuildContext context, String message, {bool success = false}) {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(
       content: Text(message),
-      backgroundColor: success ? Colors.green.shade700 : kBurntOrange,
+      backgroundColor: success ? kNavy : kRed,
     ));
 }

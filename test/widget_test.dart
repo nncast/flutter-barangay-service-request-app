@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:barangay_app/core/models.dart';
@@ -61,8 +62,8 @@ void main() {
     });
 
     test('bad hex colors fall back instead of throwing', () {
-      expect(colorFromHex('#zzzzzz'), kBurntOrange);
-      expect(colorFromHex(null), kBurntOrange);
+      expect(colorFromHex('#zzzzzz'), kOrange);
+      expect(colorFromHex(null), kOrange);
       expect(colorFromHex('#2563EB').toARGB32(), 0xFF2563EB);
     });
 
@@ -71,6 +72,64 @@ void main() {
       final local = utc.toLocal();
       final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
       expect(formatDateTime(utc.toIso8601String()), contains('$hour:05'));
+    });
+  });
+
+  group('WCAG AA contrast', () {
+    Matcher atLeast(double ratio) => greaterThanOrEqualTo(ratio);
+    Color over(Color top, double alpha, Color bottom) => Color.alphaBlend(top.withValues(alpha: alpha), bottom);
+
+    test('every status, priority and role tag is readable (4.5:1)', () {
+      final tones = [
+        ...kRequestStatuses.map(statusTone),
+        ...['low', 'normal', 'high', 'urgent'].map(priorityTone),
+        ...['admin', 'staff', 'resident', 'other'].map(roleTone),
+      ];
+      for (final tone in tones) {
+        expect(contrastRatio(tone.fg, tone.bg), atLeast(4.5), reason: '$tone');
+      }
+    });
+
+    test('category icons from the seeded API colors stand out (3:1)', () {
+      for (final hex in ['#2563EB', '#7C3AED', '#0891B2', '#DC2626', '#EA580C', '#16A34A', '#DB2777', '#BE5633']) {
+        final tone = toneOf(colorFromHex(hex));
+        expect(contrastRatio(tone.fg, tone.bg), atLeast(3), reason: hex);
+      }
+    });
+
+    test('body and secondary text on every background (4.5:1)', () {
+      for (final bg in [kWhite, kCanvas, kSurface, kYellowSoft]) {
+        expect(contrastRatio(kInk, bg), atLeast(4.5));
+        expect(contrastRatio(kGray, bg), atLeast(4.5));
+      }
+      expect(contrastRatio(kOrangeDark, kCanvas), atLeast(4.5)); // accent in the greeting
+      expect(contrastRatio(kRed, kWhite), atLeast(4.5)); // Reject, Delete, required *
+      expect(contrastRatio(kWhite, kOrange), atLeast(4.5)); // orange buttons and summary card
+      expect(contrastRatio(kInk, kYellow), atLeast(4.5)); // avatars
+      expect(contrastRatio(kWhite, kNavy), atLeast(4.5)); // navy buttons, pills and nav
+      expect(contrastRatio(kNavy, kWhite), atLeast(4.5)); // selected nav item
+      expect(contrastRatio(over(kWhite, 0.75, kNavy), kNavy), atLeast(4.5)); // unselected nav items
+    });
+
+    test('white text stays readable across the gradients (4.5:1)', () {
+      for (final stop in [kOrange, kOrangeDeep, kNavyLight, kNavyDeep]) {
+        expect(contrastRatio(kWhite, stop), atLeast(4.5), reason: '$stop');
+      }
+      for (final stop in [kNavyLight, kNavyDeep]) {
+        expect(contrastRatio(over(kWhite, 0.85, stop), stop), atLeast(4.5)); // unselected nav items
+      }
+      for (final bg in [kPeach, kCanvas]) {
+        expect(contrastRatio(kInk, bg), atLeast(4.5));
+        expect(contrastRatio(kGray, bg), atLeast(4.5)); // the date in the header
+        expect(contrastRatio(kOrange, bg), atLeast(3)); // greeting accent, 30 pt bold
+      }
+    });
+
+    test('field outlines and state indicators (3:1)', () {
+      for (final bg in [kWhite, kCanvas]) {
+        expect(contrastRatio(kOutline, bg), atLeast(3));
+        expect(contrastRatio(kOrangeDark, bg), atLeast(3)); // unread dot, spinner
+      }
     });
   });
 
