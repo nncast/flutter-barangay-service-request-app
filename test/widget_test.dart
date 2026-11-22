@@ -99,14 +99,16 @@ void main() {
 
     test('body and secondary text on every background (4.5:1)', () {
       for (final bg in [kWhite, kCanvas, kSurface, kYellowSoft]) {
-        expect(contrastRatio(kCharcoal, bg), atLeast(4.5));
+        expect(contrastRatio(kInk, bg), atLeast(4.5));
         expect(contrastRatio(kGray, bg), atLeast(4.5));
       }
       expect(contrastRatio(kOrangeDark, kCanvas), atLeast(4.5)); // accent in the greeting
       expect(contrastRatio(kRed, kWhite), atLeast(4.5)); // Reject, Delete, required *
-      expect(contrastRatio(kCharcoal, kOrange), atLeast(4.5)); // orange buttons and summary card
-      expect(contrastRatio(kWhite, kCharcoal), atLeast(4.5)); // charcoal buttons and pills
-      expect(contrastRatio(over(kWhite, 0.75, kCharcoal), kCharcoal), atLeast(4.5)); // unselected nav items
+      expect(contrastRatio(kWhite, kOrange), atLeast(4.5)); // orange buttons and summary card
+      expect(contrastRatio(kInk, kYellow), atLeast(4.5)); // avatars
+      expect(contrastRatio(kWhite, kNavy), atLeast(4.5)); // navy buttons, pills and nav
+      expect(contrastRatio(kNavy, kWhite), atLeast(4.5)); // selected nav item
+      expect(contrastRatio(over(kWhite, 0.75, kNavy), kNavy), atLeast(4.5)); // unselected nav items
     });
 
     test('field outlines and state indicators (3:1)', () {

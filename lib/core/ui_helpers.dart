@@ -3,23 +3,25 @@ import 'package:intl/intl.dart';
 
 // Shared colors and formatting so every screen shows statuses the same way.
 
-// Flat palette: charcoal (never pure black) on a warm light gray, white cards,
-// orange for actions, yellow for highlights.
+// Palette taken from the logo: burnt orange (BARANGAY) for actions, navy
+// (SERVICE REQUEST) for dark surfaces, cream (outline) for highlights, and the
+// logo's dark brown for text. Warm canvas, white cards, no pure black.
 const Color kWhite = Color(0xFFFFFFFF);
-const Color kCharcoal = Color(0xFF2A2826);
-const Color kCanvas = Color(0xFFF3F1EF);
-const Color kOrange = Color(0xFFF97316);
-const Color kOrangeDark = Color(0xFFC2410C);
-const Color kYellow = Color(0xFFFFC72C);
-const Color kYellowSoft = Color(0xFFFFF4CC);
-const Color kGray = Color(0xFF6B6B6B);
-const Color kLine = Color(0xFFE6E6E6);
-const Color kSurface = Color(0xFFF5F5F5);
+const Color kInk = Color(0xFF46291D);
+const Color kNavy = Color(0xFF2D4E8E);
+const Color kCanvas = Color(0xFFF7F2EC);
+const Color kOrange = Color(0xFFBE5633);
+const Color kOrangeDark = Color(0xFFA4482A);
+const Color kYellow = Color(0xFFFDE898);
+const Color kYellowSoft = Color(0xFFFFF5D6);
+const Color kGray = Color(0xFF6F625A);
+const Color kLine = Color(0xFFEAE3DC);
+const Color kSurface = Color(0xFFF5EFE9);
 const Color kRed = Color(0xFFDC2626);
-const Color kMuted = Color(0xFF9E9E9E);
+const Color kMuted = Color(0xFFA0958D);
 
 /// Field outlines: at least 3:1 against white and the canvas (WCAG 1.4.11).
-const Color kOutline = Color(0xFF858585);
+const Color kOutline = Color(0xFF8A7E76);
 
 /// WCAG contrast ratio, from 1 to 21. Text needs 4.5 (AA), icons and outlines 3.
 double contrastRatio(Color a, Color b) {
@@ -27,26 +29,26 @@ double contrastRatio(Color a, Color b) {
   return x > y ? x / y : y / x;
 }
 
-/// Charcoal or white, whichever has the higher contrast on [color].
-Color onColor(Color color) => contrastRatio(color, kCharcoal) >= contrastRatio(color, kWhite) ? kCharcoal : kWhite;
+/// Dark brown or white, whichever has the higher contrast on [color].
+Color onColor(Color color) => contrastRatio(color, kInk) >= contrastRatio(color, kWhite) ? kInk : kWhite;
 
 /// A soft tint for backgrounds, a dark shade of the same hue for text on it
 /// (at least 4.5:1), and a stronger color for dots.
 typedef Tone = ({Color bg, Color fg, Color dot});
 
 const Tone kAmber = (bg: Color(0xFFFEF3C7), fg: Color(0xFF92400E), dot: Color(0xFFF59E0B));
-const Tone kBlue = (bg: Color(0xFFDBEAFE), fg: Color(0xFF1E40AF), dot: Color(0xFF3B82F6));
+const Tone kBlue = (bg: Color(0xFFDFE6F3), fg: kNavy, dot: Color(0xFF4A6FB5));
 const Tone kTeal = (bg: Color(0xFFCCFBF1), fg: Color(0xFF115E59), dot: Color(0xFF14B8A6));
-const Tone kOrangeTone = (bg: Color(0xFFFFEDD5), fg: Color(0xFF9A3412), dot: kOrange);
+const Tone kOrangeTone = (bg: Color(0xFFF9E2D6), fg: Color(0xFF8A3A1F), dot: kOrange);
 const Tone kGreen = (bg: Color(0xFFDCFCE7), fg: Color(0xFF166534), dot: Color(0xFF22C55E));
 const Tone kRedTone = (bg: Color(0xFFFEE2E2), fg: Color(0xFF991B1B), dot: Color(0xFFEF4444));
 const Tone kViolet = (bg: Color(0xFFEDE9FE), fg: Color(0xFF5B21B6), dot: Color(0xFF8B5CF6));
-const Tone kGrayTone = (bg: Color(0xFFEEEEEE), fg: Color(0xFF4A4A4A), dot: kMuted);
+const Tone kGrayTone = (bg: Color(0xFFEFE9E3), fg: Color(0xFF4F443D), dot: kMuted);
 
 /// Tone for a color that comes from the API, such as a category's.
 Tone toneOf(Color color) => (
       bg: Color.alphaBlend(color.withValues(alpha: 0.14), kWhite),
-      fg: Color.lerp(color, kCharcoal, 0.3)!,
+      fg: Color.lerp(color, kInk, 0.3)!,
       dot: color,
     );
 
@@ -324,7 +326,7 @@ class SectionTitle extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kCharcoal, letterSpacing: -0.5),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kInk, letterSpacing: -0.5),
           ),
         ),
         if (onViewAll != null)
@@ -401,7 +403,7 @@ class Greeting extends StatelessWidget {
           style: const TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.w700,
-            color: kCharcoal,
+            color: kInk,
             height: 1.12,
             letterSpacing: -0.8,
           ),
@@ -411,8 +413,8 @@ class Greeting extends StatelessWidget {
   }
 }
 
-/// Orange summary card: a small tag, a big title, and a white pill row with
-/// a one-line summary and a charcoal action button.
+/// Burnt-orange summary card: a small tag, a big white title, and a white pill
+/// row with a one-line summary and a navy action button.
 class HeroCard extends StatelessWidget {
   final String tag;
   final IconData icon;
@@ -447,11 +449,11 @@ class HeroCard extends StatelessWidget {
                 decoration: const ShapeDecoration(color: kYellowSoft, shape: StadiumBorder()),
                 child: Text(
                   tag,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kCharcoal),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk),
                 ),
               ),
               const Spacer(),
-              ExcludeSemantics(child: Icon(icon, size: 44, color: kCharcoal)),
+              ExcludeSemantics(child: Icon(icon, size: 44, color: kWhite)),
             ],
           ),
           const SizedBox(height: 10),
@@ -460,7 +462,7 @@ class HeroCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: kCharcoal,
+              color: kWhite,
               height: 1.08,
               letterSpacing: -0.8,
             ),
@@ -477,13 +479,13 @@ class HeroCard extends StatelessWidget {
                     summary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kCharcoal),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kInk),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: onAction,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kCharcoal,
+                    backgroundColor: kNavy,
                     foregroundColor: kWhite,
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                     textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
@@ -501,7 +503,7 @@ class HeroCard extends StatelessWidget {
 
 typedef NavItem = ({IconData icon, String label, int badge});
 
-/// Floating charcoal pill navigation; the selected item sits in a white pill.
+/// Floating navy pill navigation; the selected item sits in a white pill.
 /// [action] (e.g. a round "+" button) goes to its right.
 class FloatingNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -529,7 +531,7 @@ class FloatingNavBar extends StatelessWidget {
               child: Container(
                 height: 64,
                 padding: const EdgeInsets.all(5),
-                decoration: const ShapeDecoration(color: kCharcoal, shape: StadiumBorder()),
+                decoration: const ShapeDecoration(color: kNavy, shape: StadiumBorder()),
                 child: Row(
                   children: [
                     for (final (i, item) in items.indexed)
@@ -557,7 +559,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = selected ? kCharcoal : kWhite.withValues(alpha: 0.75);
+    final fg = selected ? kNavy : kWhite.withValues(alpha: 0.75);
     return Semantics(
       selected: selected,
       child: Material(
@@ -610,7 +612,7 @@ class EmptyState extends StatelessWidget {
         Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kCharcoal),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kInk),
         ),
         if (hint != null) ...[
           const SizedBox(height: 6),

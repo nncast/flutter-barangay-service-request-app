@@ -109,7 +109,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     children: [
                       const Icon(Icons.search_off, size: 56, color: kGray),
                       const SizedBox(height: 12),
-                      Text(_error ?? 'Request not found', style: const TextStyle(color: kCharcoal)),
+                      Text(_error ?? 'Request not found', style: const TextStyle(color: kInk)),
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: () {
@@ -164,7 +164,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _statusMessage(req.status),
-                  style: const TextStyle(color: kCharcoal, fontSize: 14, height: 1.4),
+                  style: const TextStyle(color: kInk, fontSize: 14, height: 1.4),
                 ),
                 if (req.remarks?.isNotEmpty ?? false) ...[
                   const SizedBox(height: 16),
@@ -180,10 +180,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       children: [
                         const Text(
                           'Remarks from the barangay',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: kCharcoal),
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: kInk),
                         ),
                         const SizedBox(height: 4),
-                        Text(req.remarks!, style: const TextStyle(fontSize: 13, color: kCharcoal)),
+                        Text(req.remarks!, style: const TextStyle(fontSize: 13, color: kInk)),
                       ],
                     ),
                   ),
@@ -204,7 +204,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 const SizedBox(height: 4),
                 const Text('Description', style: TextStyle(fontWeight: FontWeight.w500, color: kGray)),
                 const SizedBox(height: 4),
-                Text(req.description, style: const TextStyle(color: kCharcoal, height: 1.4)),
+                Text(req.description, style: const TextStyle(color: kInk, height: 1.4)),
               ],
             ),
             const SizedBox(height: 16),
@@ -234,7 +234,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: kGray)),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: kCharcoal)),
+            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: kInk)),
           ),
         ],
       ),
@@ -257,7 +257,7 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kCharcoal)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kInk)),
             const Divider(height: 24),
             ...children,
           ],
@@ -285,7 +285,7 @@ class _HistoryEntry extends StatelessWidget {
           if (log.note?.isNotEmpty ?? false)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text(log.note!, style: const TextStyle(fontSize: 13, color: kCharcoal)),
+              child: Text(log.note!, style: const TextStyle(fontSize: 13, color: kInk)),
             ),
           Padding(
             padding: const EdgeInsets.only(top: 4),

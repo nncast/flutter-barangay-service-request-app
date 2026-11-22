@@ -70,7 +70,7 @@ class NotificationsScreen extends StatelessWidget {
                         notification.title,
                         style: TextStyle(
                           fontWeight: notification.isRead ? FontWeight.w600 : FontWeight.w800,
-                          color: kCharcoal,
+                          color: kInk,
                         ),
                       ),
                       subtitle: Column(

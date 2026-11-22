@@ -140,7 +140,7 @@ class AdminDashboardPage extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Center(
-                      child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kCharcoal)),
+                      child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kInk)),
                     ),
                   ),
                 )
@@ -176,7 +176,7 @@ class _AdminStatCard extends StatelessWidget {
             children: [
               Text(
                 '$value',
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: kCharcoal, height: 1.1),
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: kInk, height: 1.1),
               ),
               const SizedBox(height: 6),
               StatusChip(status: status),
@@ -218,14 +218,14 @@ class AdminRequestCard extends StatelessWidget {
                       request.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kCharcoal),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kInk),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${request.user?.name ?? 'Unknown'} · ${request.category?.name ?? 'General'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, color: kCharcoal),
+                      style: const TextStyle(fontSize: 13, color: kInk),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -319,7 +319,7 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
             child: Text('Request Details'),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: kCharcoal),
+            icon: const Icon(Icons.close, color: kInk),
             onPressed: () => Navigator.pop(dialogContext),
           ),
         ],
@@ -342,7 +342,7 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
                         children: [
                           const Text('Tracking Code', style: TextStyle(fontSize: 11, color: kGray)),
                           Text(request.trackingCode,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: kCharcoal)),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: kInk)),
                         ],
                       ),
                     ),
@@ -491,7 +491,7 @@ Future<void> applyStatus(BuildContext context, RequestModel request, String stat
       content: Text(ok
           ? '${request.trackingCode} is now ${statusLabel(status)}'
           : (requestProvider.error ?? 'Failed to update status')),
-      backgroundColor: ok ? kCharcoal : kRed,
+      backgroundColor: ok ? kNavy : kRed,
     ));
 }
 
@@ -539,7 +539,7 @@ class _StatusDialogState extends State<_StatusDialog> {
                             children: [
                               Dot(statusColor(s)),
                               const SizedBox(width: 8),
-                              Text(statusLabel(s), style: const TextStyle(color: kCharcoal)),
+                              Text(statusLabel(s), style: const TextStyle(color: kInk)),
                             ],
                           ),
                         ))
@@ -611,7 +611,7 @@ class _InfoSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: isLongText ? 13 : 14,
                     fontWeight: isLongText ? FontWeight.normal : FontWeight.w600,
-                    color: kCharcoal,
+                    color: kInk,
                     height: isLongText ? 1.4 : null,
                   ),
                 ),
@@ -642,9 +642,9 @@ class _HistorySection extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.history, size: 18, color: kCharcoal),
+              Icon(Icons.history, size: 18, color: kInk),
               SizedBox(width: 8),
-              Text('Status History', style: TextStyle(fontWeight: FontWeight.w800, color: kCharcoal)),
+              Text('Status History', style: TextStyle(fontWeight: FontWeight.w800, color: kInk)),
             ],
           ),
           const SizedBox(height: 12),
@@ -658,7 +658,7 @@ class _HistorySection extends StatelessWidget {
                   if (log.note?.isNotEmpty ?? false)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text(log.note!, style: const TextStyle(fontSize: 12, color: kCharcoal)),
+                      child: Text(log.note!, style: const TextStyle(fontSize: 12, color: kInk)),
                     ),
                   const SizedBox(height: 2),
                   Text(
@@ -814,13 +814,13 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
 
     return FilterChip(
       label: Text('${status == 'all' ? 'All' : statusLabel(status)} ($count)'),
-      labelStyle: TextStyle(color: isSelected ? kWhite : kCharcoal, fontWeight: FontWeight.w600),
+      labelStyle: TextStyle(color: isSelected ? kWhite : kInk, fontWeight: FontWeight.w600),
       avatar: status == 'all' ? null : Dot(statusColor(status)),
       selected: isSelected,
       showCheckmark: false,
       onSelected: (_) => widget.filter.value = status,
       backgroundColor: kWhite,
-      selectedColor: kCharcoal,
+      selectedColor: kNavy,
       side: BorderSide.none,
       shape: const StadiumBorder(),
     );
@@ -845,7 +845,7 @@ class AdminProfilePage extends StatelessWidget {
           Text(
             user?.name ?? 'Admin',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.3),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kInk, letterSpacing: -0.3),
           ),
           const SizedBox(height: 4),
           Text(user?.email ?? '', textAlign: TextAlign.center, style: const TextStyle(color: kGray)),

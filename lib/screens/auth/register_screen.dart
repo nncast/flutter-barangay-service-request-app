@@ -81,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   const Text(
                     'Register as Resident',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.4),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kInk, letterSpacing: -0.4),
                   ),
                   const SizedBox(height: 4),
                   const Text('Fill in your details to start sending requests.', style: TextStyle(color: kGray)),
@@ -148,7 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: kCharcoal),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: kInk),
                           )
                         : const Text('Register'),
                   ),

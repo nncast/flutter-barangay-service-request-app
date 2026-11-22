@@ -49,6 +49,6 @@ void showMessage(BuildContext context, String message, {bool success = false}) {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(
       content: Text(message),
-      backgroundColor: success ? kCharcoal : kRed,
+      backgroundColor: success ? kNavy : kRed,
     ));
 }

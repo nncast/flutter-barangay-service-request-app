@@ -31,7 +31,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     user?.name ?? 'User',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.3),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kInk, letterSpacing: -0.3),
                   ),
                   const SizedBox(height: 8),
                   Tag(label: user?.role.toUpperCase() ?? 'RESIDENT', tone: roleTone(user?.role ?? 'resident')),
@@ -90,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text(label, style: const TextStyle(fontSize: 12, color: kGray)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kCharcoal)),
+                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kInk)),
               ],
             ),
           ),
@@ -103,7 +103,7 @@ class ProfileScreen extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: IconBox(icon, size: 40, color: kWhite),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: kCharcoal)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: kInk)),
       trailing: const Icon(Icons.chevron_right, color: kGray),
       onTap: onTap,
     );
@@ -123,13 +123,13 @@ class ProfileScreen extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: kCharcoal.withValues(alpha: 0.1),
+                    color: kInk.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.account_balance,
                     size: 48,
-                    color: kCharcoal,
+                    color: kInk,
                   ),
                 );
               },
@@ -155,7 +155,7 @@ class ProfileScreen extends StatelessWidget {
               'A service request system for barangay residents to submit and track requests efficiently.',
               style: TextStyle(
                 fontSize: 13,
-                color: kCharcoal,
+                color: kInk,
                 height: 1.4,
               ),
               textAlign: TextAlign.center,
@@ -170,14 +170,14 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.code, size: 16, color: kCharcoal),
+                      Icon(Icons.code, size: 16, color: kInk),
                       SizedBox(width: 8),
                       Text(
                         'License',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: kCharcoal,
+                          color: kInk,
                         ),
                       ),
                     ],
@@ -188,7 +188,7 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: kCharcoal,
+                      color: kInk,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -221,14 +221,14 @@ class ProfileScreen extends StatelessWidget {
                   // Developer Credits
                   const Row(
                     children: [
-                      Icon(Icons.people, size: 16, color: kCharcoal),
+                      Icon(Icons.people, size: 16, color: kInk),
                       SizedBox(width: 8),
                       Text(
                         'Developers',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: kCharcoal,
+                          color: kInk,
                         ),
                       ),
                     ],
@@ -271,7 +271,7 @@ class ProfileScreen extends StatelessWidget {
         name,
         style: const TextStyle(
           fontSize: 10,
-          color: kCharcoal,
+          color: kInk,
         ),
       ),
     );
@@ -283,7 +283,7 @@ class ProfileScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.help_outline, color: kCharcoal),
+            Icon(Icons.help_outline, color: kInk),
             SizedBox(width: 8),
             Text('Help & Support'),
           ],
@@ -294,7 +294,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const Text(
               'How can we help you?',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kCharcoal),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kInk),
             ),
             const SizedBox(height: 16),
             _helpOption(
@@ -349,8 +349,8 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: kCharcoal, size: 28),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: kCharcoal)),
+      leading: Icon(icon, color: kInk, size: 28),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: kInk)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: kGray)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: kGray),
       onTap: onTap,
@@ -368,7 +368,7 @@ class ProfileScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: const Icon(Icons.location_on, color: kCharcoal),
+              leading: const Icon(Icons.location_on, color: kInk),
               title: const Text('Address'),
               subtitle: const Text('Dubinan East Barangay Multi-purpose Hall, CM Recto St, Santiago City', style: TextStyle(color: kGray)),
               onTap: () {
@@ -377,7 +377,7 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.phone, color: kCharcoal),
+              leading: const Icon(Icons.phone, color: kInk),
               title: const Text('Phone'),
               subtitle: const Text('(02) 1234-5678'),
               onTap: () {
@@ -385,7 +385,7 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.email, color: kCharcoal),
+              leading: const Icon(Icons.email, color: kInk),
               title: const Text('Email'),
               subtitle: const Text(_hallEmail),
               onTap: () {
@@ -393,7 +393,7 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const ListTile(
-              leading: Icon(Icons.access_time, color: kCharcoal),
+              leading: Icon(Icons.access_time, color: kInk),
               title: Text('Office Hours'),
               subtitle: Text('Monday - Friday: 8:00 AM - 5:00 PM'),
             ),
@@ -476,7 +476,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: kCharcoal,
+                  color: kInk,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
@@ -497,7 +497,7 @@ class ProfileScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: kCharcoal,
+                    color: kInk,
                   ),
                 ),
               ),
@@ -518,7 +518,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     'A',
                     style: TextStyle(
-                      color: kCharcoal,
+                      color: kInk,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),

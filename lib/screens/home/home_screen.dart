@@ -170,7 +170,7 @@ class DashboardPage extends StatelessWidget {
                       children: [
                         IconBox(Icons.inbox_outlined, size: 56),
                         SizedBox(height: 12),
-                        Text('No requests yet', style: TextStyle(fontWeight: FontWeight.w700, color: kCharcoal)),
+                        Text('No requests yet', style: TextStyle(fontWeight: FontWeight.w700, color: kInk)),
                         SizedBox(height: 4),
                         Text(
                           'Tap New request above to submit your first one',
@@ -212,7 +212,7 @@ class _CategoryCard extends StatelessWidget {
             children: [
               Text(
                 category.name,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kCharcoal, height: 1.2),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kInk, height: 1.2),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -245,7 +245,7 @@ class _RetryCard extends StatelessWidget {
           children: [
             const Icon(Icons.wifi_off, color: kGray),
             const SizedBox(width: 12),
-            Expanded(child: Text(message, style: const TextStyle(color: kCharcoal))),
+            Expanded(child: Text(message, style: const TextStyle(color: kInk))),
             TextButton(onPressed: onRetry, child: const Text('Retry')),
           ],
         ),
@@ -291,14 +291,14 @@ class RequestListCard extends StatelessWidget {
                           request.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kCharcoal),
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kInk),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           request.category?.name ?? 'General',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, color: kCharcoal),
+                          style: const TextStyle(fontSize: 13, color: kInk),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -322,7 +322,7 @@ class RequestListCard extends StatelessWidget {
                     request.remarks!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: kCharcoal),
+                    style: const TextStyle(fontSize: 12, color: kInk),
                   ),
                 ),
             ],
