@@ -61,20 +61,18 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Request', style: TextStyle(color: kDarkBrown)),
+        title: const Text('Cancel Request'),
         content: Text(
           'Are you sure you want to cancel "${request.title}"? This can\'t be undone.',
-          style: const TextStyle(color: kDarkBrown),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            style: TextButton.styleFrom(foregroundColor: kDarkBrown),
             child: const Text('Keep Request'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: kRed),
             child: const Text('Yes, Cancel'),
           ),
         ],
@@ -109,16 +107,15 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search_off, size: 56, color: kDarkBrown.withValues(alpha: 0.3)),
+                      Icon(Icons.search_off, size: 56, color: kBlack.withValues(alpha: 0.3)),
                       const SizedBox(height: 12),
-                      Text(_error ?? 'Request not found', style: const TextStyle(color: kDarkBrown)),
+                      Text(_error ?? 'Request not found', style: const TextStyle(color: kBlack)),
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: () {
                           setState(() => _loading = true);
                           _loadRequest();
                         },
-                        style: TextButton.styleFrom(foregroundColor: kBurntOrange),
                         child: const Text('Try again'),
                       ),
                     ],
@@ -128,7 +125,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       );
     }
 
-    final color = statusColor(req.status);
     final cancelling = context.select<RequestProvider, bool>((rp) => rp.submitting);
 
     return Scaffold(
@@ -142,17 +138,14 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   icon: const Icon(Icons.cancel_outlined),
                   label: const Text('Cancel Request'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade700,
-                    side: BorderSide(color: Colors.red.shade300),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    foregroundColor: kRed,
+                    side: const BorderSide(color: kRed, width: 1.2),
                   ),
                 ),
               ),
             )
           : null,
       body: RefreshIndicator(
-        color: kBurntOrange,
         onRefresh: _loadRequest,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -160,19 +153,18 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             // Status Card
             _SectionCard(
               title: 'Current Status',
-              dotColor: color,
               children: [
                 Row(
                   children: [
-                    Icon(statusIcon(req.status), color: color),
-                    const SizedBox(width: 8),
+                    IconBox(statusIcon(req.status), size: 40, color: statusColor(req.status)),
+                    const SizedBox(width: 12),
                     StatusChip(status: req.status, fontSize: 13),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   _statusMessage(req.status),
-                  style: TextStyle(color: kDarkBrown.withValues(alpha: 0.75), fontSize: 14, height: 1.4),
+                  style: const TextStyle(color: kBlack, fontSize: 14, height: 1.4),
                 ),
                 if (req.remarks?.isNotEmpty ?? false) ...[
                   const SizedBox(height: 16),
@@ -180,19 +172,18 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: kCreamGold.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: kCreamGold),
+                      color: kYellowSoft,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Remarks from the barangay',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: kDarkBrown),
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: kBlack),
                         ),
                         const SizedBox(height: 4),
-                        Text(req.remarks!, style: const TextStyle(fontSize: 13, color: kDarkBrown)),
+                        Text(req.remarks!, style: const TextStyle(fontSize: 13, color: kBlack)),
                       ],
                     ),
                   ),
@@ -207,16 +198,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               children: [
                 _detailRow('Title', req.title),
                 _detailRow('Category', req.category?.name ?? '-'),
-                _detailRow('Priority', priorityLabel(req.priority), valueColor: priorityColor(req.priority)),
+                _detailRow('Priority', priorityLabel(req.priority)),
                 _detailRow('Submitted', formatDateTime(req.createdAt)),
                 if (req.completedAt != null) _detailRow('Completed', formatDateTime(req.completedAt!)),
                 const SizedBox(height: 4),
-                Text(
-                  'Description',
-                  style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withValues(alpha: 0.6)),
-                ),
+                const Text('Description', style: TextStyle(fontWeight: FontWeight.w500, color: kGray)),
                 const SizedBox(height: 4),
-                Text(req.description, style: const TextStyle(color: kDarkBrown, height: 1.4)),
+                Text(req.description, style: const TextStyle(color: kBlack, height: 1.4)),
               ],
             ),
             const SizedBox(height: 16),
@@ -235,7 +223,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
   }
 
-  Widget _detailRow(String label, String value, {Color? valueColor}) {
+  Widget _detailRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -243,19 +231,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         children: [
           SizedBox(
             width: 90,
-            child: Text(
-              label,
-              style: TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown.withValues(alpha: 0.6)),
-            ),
+            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: kGray)),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: valueColor ?? kDarkBrown,
-                fontWeight: valueColor != null ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
+            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: kBlack)),
           ),
         ],
       ),
@@ -265,36 +244,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
 class _SectionCard extends StatelessWidget {
   final String title;
-  final Color dotColor;
   final List<Widget> children;
 
-  const _SectionCard({required this.title, this.dotColor = kBurntOrange, required this.children});
+  const _SectionCard({required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kDarkBrown),
-                ),
-              ],
-            ),
-            Divider(height: 24, color: kDarkBrown.withValues(alpha: 0.15)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kBlack)),
+            const Divider(height: 24),
             ...children,
           ],
         ),
@@ -310,39 +274,24 @@ class _HistoryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = statusColor(log.newStatus);
     final by = log.changer?.name;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 10,
-            height: 10,
-            margin: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(log.newStatusLabel, style: TextStyle(fontWeight: FontWeight.bold, color: color)),
-                if (log.note?.isNotEmpty ?? false)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(log.note!, style: TextStyle(fontSize: 13, color: kDarkBrown.withValues(alpha: 0.75))),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    by != null ? '${formatDateTime(log.createdAt)} · $by' : formatDateTime(log.createdAt),
-                    style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.5)),
-                  ),
-                ),
-              ],
+          Tag(label: log.newStatusLabel, color: statusColor(log.newStatus)),
+          if (log.note?.isNotEmpty ?? false)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(log.note!, style: const TextStyle(fontSize: 13, color: kBlack)),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              by != null ? '${formatDateTime(log.createdAt)} · $by' : formatDateTime(log.createdAt),
+              style: const TextStyle(fontSize: 12, color: kGray),
             ),
           ),
         ],

@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 
 // Shared colors and formatting so every screen shows statuses the same way.
 
+// Flat palette: black and white, orange for actions, yellow for highlights.
 const Color kWhite = Color(0xFFFFFFFF);
-const Color kCreamGold = Color(0xFFFAD793);
-const Color kBurntOrange = Color(0xFFBE5633);
-const Color kDarkBrown = Color(0xFF46291D);
+const Color kBlack = Color(0xFF111111);
+const Color kOrange = Color(0xFFF97316);
+const Color kYellow = Color(0xFFFFC72C);
+const Color kYellowSoft = Color(0xFFFFF4CC);
+const Color kGray = Color(0xFF6B6B6B);
+const Color kLine = Color(0xFFE6E6E6);
+const Color kSurface = Color(0xFFF5F5F5);
+const Color kRed = Color(0xFFDC2626);
+const Color kMuted = Color(0xFF9E9E9E);
+
+/// Black or white, whichever has the higher contrast on [color]. Above a
+/// luminance of 0.179 black wins (Flutter's brightness estimate would put
+/// white on the orange, at 2.8:1).
+Color onColor(Color color) => color.computeLuminance() > 0.179 ? kBlack : kWhite;
 
 /// Request statuses in workflow order. `cancelled` is set by residents only.
 const List<String> kRequestStatuses = [
@@ -52,23 +64,23 @@ String statusLabel(String? status) {
   }
 }
 
-/// Matches the colors returned by the API's `status_color`.
+/// Yellow → orange → black as a request moves along; red and gray when it stops.
 Color statusColor(String? status) {
   switch (status) {
     case 'pending':
-      return const Color(0xFFD97706);
+      return kYellow;
     case 'in_review':
-      return const Color(0xFF2563EB);
+      return const Color(0xFFFFA41B);
     case 'approved':
-      return const Color(0xFF059669);
+      return kOrange;
     case 'processing':
-      return const Color(0xFF7C3AED);
+      return const Color(0xFFC2410C);
     case 'completed':
-      return const Color(0xFF0D9488);
+      return kBlack;
     case 'rejected':
-      return const Color(0xFFDC2626);
+      return kRed;
     default:
-      return const Color(0xFF6B7280);
+      return kMuted;
   }
 }
 
@@ -98,14 +110,12 @@ String priorityLabel(String priority) =>
 
 Color priorityColor(String priority) {
   switch (priority) {
-    case 'low':
-      return Colors.green;
     case 'high':
-      return Colors.orange;
+      return kOrange;
     case 'urgent':
-      return Colors.red;
+      return kRed;
     default:
-      return kBurntOrange;
+      return kLine;
   }
 }
 
@@ -131,14 +141,6 @@ IconData categoryIcon(String? name) {
     default:
       return Icons.category_outlined;
   }
-}
-
-Color colorFromHex(String? hex, {Color fallback = kBurntOrange}) {
-  if (hex == null) return fallback;
-  final value = hex.replaceFirst('#', '');
-  if (value.length != 6) return fallback;
-  final parsed = int.tryParse(value, radix: 16);
-  return parsed == null ? fallback : Color(0xFF000000 | parsed);
 }
 
 DateTime? _parseLocal(String value) => DateTime.tryParse(value)?.toLocal();
@@ -167,7 +169,28 @@ String formatRelative(String value) {
   return '${_months[dt.month - 1]} ${dt.day}, ${dt.year}';
 }
 
-/// Small rounded label used for request statuses everywhere.
+/// Small filled label, e.g. a status or a priority.
+class Tag extends StatelessWidget {
+  final String label;
+  final Color color;
+  final double fontSize;
+
+  const Tag({super.key, required this.label, required this.color, this.fontSize = 11});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700, color: onColor(color)),
+      ),
+    );
+  }
+}
+
+/// Request status label used everywhere.
 class StatusChip extends StatelessWidget {
   final String status;
   final double fontSize;
@@ -175,18 +198,208 @@ class StatusChip extends StatelessWidget {
   const StatusChip({super.key, required this.status, this.fontSize = 11});
 
   @override
+  Widget build(BuildContext context) =>
+      Tag(label: statusLabel(status), color: statusColor(status), fontSize: fontSize);
+}
+
+/// Initials in a filled circle.
+class InitialsAvatar extends StatelessWidget {
+  final String initials;
+  final double radius;
+  final Color color;
+
+  const InitialsAvatar({super.key, required this.initials, this.radius = 24, this.color = kYellow});
+
+  @override
   Widget build(BuildContext context) {
-    final color = statusColor(status);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: color,
       child: Text(
-        statusLabel(status),
-        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold, color: color),
+        initials,
+        style: TextStyle(fontSize: radius * 0.75, fontWeight: FontWeight.w800, color: onColor(color)),
       ),
     );
   }
+}
+
+/// Icon on a soft square, used for info rows and service tiles.
+class IconBox extends StatelessWidget {
+  final IconData icon;
+  final double size;
+  final Color color;
+
+  const IconBox(this.icon, {super.key, this.size = 36, this.color = kSurface});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+      child: Icon(icon, size: size * 0.5, color: onColor(color)),
+    );
+  }
+}
+
+/// Section heading on a page.
+class SectionTitle extends StatelessWidget {
+  final String text;
+  final Widget? trailing;
+
+  const SectionTitle(this.text, {super.key, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.2),
+          ),
+        ),
+        if (trailing != null) trailing!,
+      ],
+    );
+  }
+}
+
+/// Black greeting card at the top of both dashboards, with a few counts.
+class WelcomeCard extends StatelessWidget {
+  final String name;
+  final String initials;
+  final List<(String, int)> stats;
+
+  const WelcomeCard({super.key, required this.name, required this.initials, required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: kBlack, borderRadius: BorderRadius.circular(18)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              InitialsAvatar(initials: initials),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Welcome,', style: TextStyle(fontSize: 13, color: kWhite.withValues(alpha: 0.6))),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: kWhite,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              for (final (label, value) in stats)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$value',
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: kYellow),
+                      ),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: kWhite.withValues(alpha: 0.7)),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom navigation with a hairline on top instead of a shadow.
+class FlatNavBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<Widget> destinations;
+
+  const FlatNavBar({super.key, required this.selectedIndex, required this.onSelected, required this.destinations});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(border: Border(top: BorderSide(color: kLine))),
+      child: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onSelected,
+        destinations: destinations,
+      ),
+    );
+  }
+}
+
+/// Centered icon and message for empty or failed lists. Scrollable, so
+/// pull-to-refresh still works.
+class EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final String? hint;
+  final Widget? action;
+
+  const EmptyState({super.key, required this.icon, required this.message, this.hint, this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(32, 96, 32, 32),
+      children: [
+        Center(child: IconBox(icon, size: 64)),
+        const SizedBox(height: 16),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kBlack),
+        ),
+        if (hint != null) ...[
+          const SizedBox(height: 6),
+          Text(hint!, textAlign: TextAlign.center, style: const TextStyle(color: kGray)),
+        ],
+        if (action != null) Center(child: action),
+      ],
+    );
+  }
+}
+
+/// Small color dot next to a status name.
+class Dot extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const Dot(this.color, {super.key, this.size = 10});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      );
 }

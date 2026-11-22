@@ -9,25 +9,19 @@ import '../../core/ui_helpers.dart';
 Color _roleColor(String role) {
   switch (role) {
     case 'admin':
-      return kBurntOrange;
+      return kBlack;
     case 'staff':
-      return const Color(0xFF2563EB);
+      return kOrange;
     case 'resident':
-      return const Color(0xFF059669);
+      return kYellow;
     default:
-      return Colors.grey;
+      return kMuted;
   }
 }
 
 const _roleOrder = {'admin': 0, 'staff': 1, 'resident': 2};
 
-InputDecoration _fieldDecoration(String label) => InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: kDarkBrown),
-      border: const OutlineInputBorder(),
-      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3))),
-      focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: kBurntOrange, width: 2)),
-    );
+InputDecoration _fieldDecoration(String label) => InputDecoration(labelText: label);
 
 const _roleItems = [
   DropdownMenuItem(value: 'resident', child: Text('Resident')),
@@ -105,20 +99,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Search name or email',
-                      hintStyle: TextStyle(color: kDarkBrown.withValues(alpha: 0.5)),
-                      prefixIcon: const Icon(Icons.search, color: kBurntOrange),
+                      prefixIcon: Icon(Icons.search),
                       isDense: true,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: kBurntOrange, width: 2),
-                      ),
                     ),
                     onChanged: (value) => setState(() => _searchQuery = value),
                   ),
@@ -126,10 +110,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 const SizedBox(width: 10),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: kDarkBrown.withValues(alpha: 0.3)),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _filterRole,
@@ -154,11 +135,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _statChip('Total', users.length, kDarkBrown),
+                _statChip('Total', users.length),
                 _statChip('Admins', users.where((u) => u.role == 'admin').length, _roleColor('admin')),
                 _statChip('Staff', users.where((u) => u.role == 'staff').length, _roleColor('staff')),
                 _statChip('Residents', users.where((u) => u.role == 'resident').length, _roleColor('resident')),
-                if (inactiveCount > 0) _statChip('Inactive', inactiveCount, Colors.grey),
+                if (inactiveCount > 0) _statChip('Inactive', inactiveCount, kMuted),
               ],
             ),
           ),
@@ -168,34 +149,22 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: kCreamGold.withValues(alpha: 0.35),
+                color: kYellowSoft,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
                 'View only — only admins can add, edit or delete users.',
-                style: TextStyle(fontSize: 12, color: kDarkBrown),
+                style: TextStyle(fontSize: 12, color: kBlack),
               ),
             ),
           Expanded(
             child: RefreshIndicator(
-              color: kBurntOrange,
+              color: kOrange,
               onRefresh: userProvider.fetchUsers,
               child: userProvider.loading && users.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : filteredUsers.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [
-                            const SizedBox(height: 80),
-                            Icon(Icons.people_outline, size: 64, color: kDarkBrown.withValues(alpha: 0.3)),
-                            const SizedBox(height: 16),
-                            Text(
-                              userProvider.error ?? 'No users found',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6)),
-                            ),
-                          ],
-                        )
+                      ? EmptyState(icon: Icons.people_outline, message: userProvider.error ?? 'No users found')
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
                           itemCount: filteredUsers.length,
@@ -219,24 +188,23 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               onPressed: _showAddUserDialog,
               icon: const Icon(Icons.person_add),
               label: const Text('Add User'),
-              backgroundColor: kBurntOrange,
-              foregroundColor: kWhite,
             )
           : null,
     );
   }
 
-  Widget _statChip(String label, int count, Color color) {
+  Widget _statChip(String label, int count, [Color? color]) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Chip(
         visualDensity: VisualDensity.compact,
-        backgroundColor: color.withValues(alpha: 0.08),
-        side: BorderSide(color: color.withValues(alpha: 0.3)),
+        backgroundColor: kWhite,
+        side: const BorderSide(color: kLine),
         shape: const StadiumBorder(),
+        avatar: color == null ? null : Dot(color),
         label: Text(
           '$label  $count',
-          style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 12, color: kBlack, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -264,31 +232,30 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete User', style: TextStyle(color: kDarkBrown)),
+        title: const Text('Delete User'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Permanently delete ${user.name}?', style: const TextStyle(color: kDarkBrown)),
+            Text('Permanently delete ${user.name}?'),
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                color: kRed.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
                 'Their own requests and notifications are deleted too. This cannot be undone. '
                 'To keep their records, deactivate the account instead (Edit → Active).',
-                style: TextStyle(fontSize: 12, color: kDarkBrown),
+                style: TextStyle(fontSize: 12, color: kBlack),
               ),
             ),
             if (user.isAdmin) ...[
               const SizedBox(height: 8),
               const Text(
                 'This user is an admin.',
-                style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(color: kRed, fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ],
           ],
@@ -296,12 +263,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            style: TextButton.styleFrom(foregroundColor: kDarkBrown),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: kWhite),
+            style: ElevatedButton.styleFrom(backgroundColor: kRed, foregroundColor: kWhite),
             child: const Text('Delete'),
           ),
         ],
@@ -364,7 +330,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_isEdit ? 'Edit User' : 'Add New User', style: const TextStyle(color: kDarkBrown)),
+      title: Text(_isEdit ? 'Edit User' : 'Add New User'),
       content: SizedBox(
         width: 420,
         child: SingleChildScrollView(
@@ -424,10 +390,10 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 if (_isEdit && !widget.isCurrentUser)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Active', style: TextStyle(color: kDarkBrown)),
+                    title: const Text('Active', style: TextStyle(color: kBlack)),
                     subtitle: Text(
                       _active ? 'Can sign in' : 'Signed out and blocked from signing in',
-                      style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
+                      style: const TextStyle(fontSize: 12, color: kGray),
                     ),
                     value: _active,
                     onChanged: (v) => setState(() => _active = v),
@@ -440,7 +406,6 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          style: TextButton.styleFrom(foregroundColor: kDarkBrown),
           child: const Text('Cancel'),
         ),
         ElevatedButton(onPressed: _save, child: Text(_isEdit ? 'Save' : 'Create')),
@@ -462,37 +427,27 @@ class _UserCard extends StatelessWidget {
     this.onDelete,
   });
 
-  Widget _badge(String text, Color color) => Container(
-        margin: const EdgeInsets.only(right: 6, top: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(text, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+  Widget _badge(String text, Color color) => Padding(
+        padding: const EdgeInsets.only(right: 6, top: 6),
+        child: Tag(label: text, color: color, fontSize: 10),
       );
 
   @override
   Widget build(BuildContext context) {
-    final color = user.isActive ? _roleColor(user.role) : Colors.grey;
+    final color = user.isActive ? _roleColor(user.role) : kMuted;
 
     return Opacity(
       opacity: user.isActive ? 1 : 0.65,
       child: Card(
         margin: const EdgeInsets.only(bottom: 10),
-        elevation: 1.5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
           contentPadding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
-          leading: CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.12),
-            child: Text(user.initials, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-          ),
+          leading: InitialsAvatar(initials: user.initials, radius: 20, color: color),
           title: Text(
             user.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w600, color: kDarkBrown),
+            style: const TextStyle(fontWeight: FontWeight.w700, color: kBlack),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,13 +456,13 @@ class _UserCard extends StatelessWidget {
                 user.email,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.7)),
+                style: const TextStyle(fontSize: 12, color: kGray),
               ),
               Wrap(
                 children: [
                   _badge(user.roleLabel, color),
-                  if (isCurrentUser) _badge('You', kBurntOrange),
-                  if (!user.isActive) _badge('Inactive', Colors.grey),
+                  if (isCurrentUser) _badge('You', kLine),
+                  if (!user.isActive) _badge('Inactive', kMuted),
                 ],
               ),
             ],
@@ -520,13 +475,13 @@ class _UserCard extends StatelessWidget {
                     if (onEdit != null)
                       IconButton(
                         tooltip: 'Edit',
-                        icon: const Icon(Icons.edit_outlined, color: kBurntOrange),
+                        icon: const Icon(Icons.edit_outlined),
                         onPressed: onEdit,
                       ),
                     if (onDelete != null)
                       IconButton(
                         tooltip: 'Delete',
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: const Icon(Icons.delete_outline, color: kRed),
                         onPressed: onDelete,
                       ),
                   ],

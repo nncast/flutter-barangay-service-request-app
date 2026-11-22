@@ -60,10 +60,11 @@ void main() {
       expect(colors.length, kStaffSettableStatuses.length);
     });
 
-    test('bad hex colors fall back instead of throwing', () {
-      expect(colorFromHex('#zzzzzz'), kBurntOrange);
-      expect(colorFromHex(null), kBurntOrange);
-      expect(colorFromHex('#2563EB').toARGB32(), 0xFF2563EB);
+    test('labels on light colors are black, on dark colors white', () {
+      expect(onColor(statusColor('pending')), kBlack);
+      expect(onColor(statusColor('approved')), kBlack);
+      expect(onColor(statusColor('completed')), kWhite);
+      expect(onColor(statusColor('rejected')), kWhite);
     });
 
     test('dates are shown in local time', () {

@@ -30,35 +30,7 @@ class BarangayApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Barangay Service System',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          // Seeding from the brand color keeps dialogs, switches, progress
-          // indicators and text selection on-brand instead of default purple.
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: kBurntOrange,
-            primary: kBurntOrange,
-            surface: kWhite,
-            // Cards and dialogs stay white rather than tinted.
-            surfaceContainerLow: kWhite,
-            surfaceContainerHigh: kWhite,
-          ),
-          scaffoldBackgroundColor: kWhite,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: kBurntOrange,
-            foregroundColor: kWhite,
-            elevation: 0,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kBurntOrange,
-              foregroundColor: kWhite,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-        ),
+        theme: _flatTheme(),
         initialRoute: '/',
         routes: {
           '/': (context) => const SplashScreen(),
@@ -115,52 +87,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [kCreamGold, kBurntOrange, kDarkBrown],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/images/BSR_Logo_2.png',
-                  height: 200,
-                  width: 200,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: kWhite.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.account_balance, size: 80, color: kBurntOrange),
-                    );
-                  },
+                Image.asset('assets/images/BSR_Logo_1.png', width: 260),
+                const SizedBox(height: 16),
+                const Text(
+                  'Dubinan East',
+                  style: TextStyle(color: kGray, fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: 1.2),
                 ),
-                const SizedBox(height: 30),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: kWhite.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Dubinan East',
-                    style: TextStyle(color: kWhite, fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                ),
-                const SizedBox(height: 60),
-                const CircularProgressIndicator(color: kWhite, strokeWidth: 2),
-                const SizedBox(height: 20),
-                Text(
-                  'Loading...',
-                  style: TextStyle(color: kWhite.withValues(alpha: 0.8), fontSize: 12),
+                const SizedBox(height: 48),
+                const SizedBox(
+                  width: 120,
+                  child: LinearProgressIndicator(minHeight: 3, backgroundColor: kLine),
                 ),
               ],
             ),
@@ -169,4 +112,152 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
+}
+
+/// Flat look: no shadows or tints, thin gray borders, black text,
+/// orange for actions and yellow for highlights.
+ThemeData _flatTheme() {
+  final radius = BorderRadius.circular(12);
+  OutlineInputBorder inputBorder([BorderSide side = BorderSide.none]) =>
+      OutlineInputBorder(borderRadius: radius, borderSide: side);
+
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: kOrange,
+      dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+      primary: kOrange,
+      onPrimary: kBlack,
+      secondary: kYellow,
+      onSecondary: kBlack,
+      error: kRed,
+      surface: kWhite,
+      onSurface: kBlack,
+      onSurfaceVariant: kGray,
+      outline: kLine,
+      outlineVariant: kLine,
+      surfaceContainerLowest: kWhite,
+      surfaceContainerLow: kWhite,
+      surfaceContainer: kWhite,
+      surfaceContainerHigh: kWhite,
+      surfaceContainerHighest: kSurface,
+    ),
+    scaffoldBackgroundColor: kWhite,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: kWhite,
+      foregroundColor: kBlack,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      centerTitle: false,
+      titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.4),
+      shape: Border(bottom: BorderSide(color: kLine)),
+    ),
+    cardTheme: CardThemeData(
+      color: kWhite,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: kLine)),
+    ),
+    dividerTheme: const DividerThemeData(color: kLine, thickness: 1),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: kOrange,
+        foregroundColor: kBlack,
+        disabledBackgroundColor: kLine,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        shape: RoundedRectangleBorder(borderRadius: radius),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: kBlack,
+        side: const BorderSide(color: kBlack, width: 1.2),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        shape: RoundedRectangleBorder(borderRadius: radius),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: kBlack,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        backgroundColor: kWhite,
+        foregroundColor: kBlack,
+        selectedBackgroundColor: kBlack,
+        selectedForegroundColor: kWhite,
+        side: const BorderSide(color: kLine),
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        shape: RoundedRectangleBorder(borderRadius: radius),
+      ),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: kOrange,
+      foregroundColor: kBlack,
+      elevation: 0,
+      focusElevation: 0,
+      hoverElevation: 0,
+      highlightElevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      extendedTextStyle: const TextStyle(fontWeight: FontWeight.w700),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: kSurface,
+      prefixIconColor: kGray,
+      suffixIconColor: kGray,
+      labelStyle: const TextStyle(color: kGray),
+      floatingLabelStyle: const TextStyle(color: kBlack, fontWeight: FontWeight.w600),
+      hintStyle: const TextStyle(color: kGray),
+      border: inputBorder(),
+      enabledBorder: inputBorder(),
+      disabledBorder: inputBorder(),
+      focusedBorder: inputBorder(const BorderSide(color: kBlack, width: 1.5)),
+      errorBorder: inputBorder(const BorderSide(color: kRed)),
+      focusedErrorBorder: inputBorder(const BorderSide(color: kRed, width: 1.5)),
+    ),
+    navigationBarTheme: const NavigationBarThemeData(
+      backgroundColor: kWhite,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      height: 68,
+      indicatorColor: kYellow,
+      iconTheme: WidgetStatePropertyAll(IconThemeData(color: kBlack)),
+      labelTextStyle: WidgetStatePropertyAll(
+        TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kBlack),
+      ),
+    ),
+    tabBarTheme: const TabBarThemeData(
+      labelColor: kBlack,
+      unselectedLabelColor: kGray,
+      indicatorColor: kOrange,
+      indicatorSize: TabBarIndicatorSize.label,
+      dividerColor: Colors.transparent,
+      labelStyle: TextStyle(fontWeight: FontWeight.w700),
+      unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500),
+    ),
+    badgeTheme: const BadgeThemeData(backgroundColor: kOrange, textColor: kBlack),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: kOrange),
+    dialogTheme: DialogThemeData(
+      backgroundColor: kWhite,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      titleTextStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: kBlack),
+      contentTextStyle: const TextStyle(fontSize: 14, color: kBlack, height: 1.4),
+    ),
+    popupMenuTheme: const PopupMenuThemeData(color: kWhite, surfaceTintColor: Colors.transparent),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: kBlack,
+      contentTextStyle: const TextStyle(color: kWhite),
+      shape: RoundedRectangleBorder(borderRadius: radius),
+    ),
+  );
 }

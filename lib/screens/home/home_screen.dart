@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final unread = context.select<RequestProvider, int>((rp) => rp.unreadCount);
+    Widget alerts(IconData icon) => Badge(label: Text('$unread'), isLabelVisible: unread > 0, child: Icon(icon));
 
     return Scaffold(
       // IndexedStack keeps each tab's scroll position and filters.
@@ -48,25 +49,26 @@ class _HomeScreenState extends State<HomeScreen> {
           const ProfileScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _selectTab,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: kWhite,
-        selectedItemColor: kBurntOrange,
-        unselectedItemColor: kDarkBrown.withValues(alpha: 0.5),
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          const BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'My Requests'),
-          BottomNavigationBarItem(
-            icon: Badge(
-              label: Text('$unread'),
-              isLabelVisible: unread > 0,
-              child: const Icon(Icons.notifications),
-            ),
+      bottomNavigationBar: FlatNavBar(
+        selectedIndex: _selectedIndex,
+        onSelected: _selectTab,
+        destinations: [
+          const NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
+          const NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'My Requests',
+          ),
+          NavigationDestination(
+            icon: alerts(Icons.notifications_outlined),
+            selectedIcon: alerts(Icons.notifications),
             label: 'Alerts',
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          const NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
     );
@@ -95,7 +97,6 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: RefreshIndicator(
-        color: kBurntOrange,
         onRefresh: () => Future.wait([
           rp.fetchRequests(),
           rp.fetchNotifications(),
@@ -104,78 +105,24 @@ class DashboardPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Welcome Card
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: kBurntOrange.withValues(alpha: 0.1),
-                      child: Text(
-                        user?.initials ?? 'U',
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: kBurntOrange),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Welcome,', style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6))),
-                          Text(
-                            user?.name ?? 'Resident',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Quick Stats
-            Row(
-              children: [
-                Expanded(child: _StatCard(title: 'Total', value: requests.length, color: kBurntOrange)),
-                const SizedBox(width: 12),
-                Expanded(child: _StatCard(title: 'Active', value: active, color: statusColor('in_review'))),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _StatCard(
-                    title: 'Completed',
-                    value: requests.where((r) => r.status == 'completed').length,
-                    color: statusColor('completed'),
-                  ),
-                ),
+            WelcomeCard(
+              name: user?.name ?? 'Resident',
+              initials: user?.initials ?? 'U',
+              stats: [
+                ('Total', requests.length),
+                ('Active', active),
+                ('Completed', requests.where((r) => r.status == 'completed').length),
               ],
             ),
-            const SizedBox(height: 20),
-
-            // Submit Request Button
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => _openSubmit(context),
               icon: const Icon(Icons.add),
               label: const Text('Submit New Request'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // Categories
-            const Text(
-              'Available Services',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
-            ),
+            const SectionTitle('Available Services'),
             const SizedBox(height: 12),
             if (rp.categories.isEmpty && rp.categoriesFailed)
               _RetryCard(
@@ -193,9 +140,9 @@ class DashboardPage extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 220,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  mainAxisExtent: 110,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  mainAxisExtent: 104,
                 ),
                 itemCount: rp.categories.length,
                 itemBuilder: (ctx, i) {
@@ -203,23 +150,11 @@ class DashboardPage extends StatelessWidget {
                   return _CategoryCard(category: cat, onTap: () => _openSubmit(context, cat));
                 },
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // Recent Requests
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Recent Requests',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kDarkBrown),
-                ),
-                if (requests.isNotEmpty)
-                  TextButton(
-                    onPressed: onSeeAll,
-                    style: TextButton.styleFrom(foregroundColor: kBurntOrange),
-                    child: const Text('See all'),
-                  ),
-              ],
+            SectionTitle(
+              'Recent Requests',
+              trailing: requests.isEmpty ? null : TextButton(onPressed: onSeeAll, child: const Text('See all')),
             ),
             const SizedBox(height: 8),
             if (rp.loading && requests.isEmpty)
@@ -230,21 +165,20 @@ class DashboardPage extends StatelessWidget {
             else if (rp.error != null && requests.isEmpty)
               _RetryCard(message: rp.error!, onRetry: rp.fetchRequests)
             else if (requests.isEmpty)
-              Card(
-                elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              const Card(
+                margin: EdgeInsets.zero,
                 child: Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: EdgeInsets.all(32),
                   child: Column(
                     children: [
-                      Icon(Icons.inbox, size: 48, color: kDarkBrown.withValues(alpha: 0.3)),
-                      const SizedBox(height: 8),
-                      const Text('No requests yet', style: TextStyle(color: kDarkBrown)),
-                      const SizedBox(height: 4),
+                      IconBox(Icons.inbox_outlined, size: 56),
+                      SizedBox(height: 12),
+                      Text('No requests yet', style: TextStyle(fontWeight: FontWeight.w700, color: kBlack)),
+                      SizedBox(height: 4),
                       Text(
                         'Tap the button above to submit your first request',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
+                        style: TextStyle(fontSize: 12, color: kGray),
                       ),
                     ],
                   ),
@@ -260,35 +194,6 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String title;
-  final int value;
-  final Color color;
-
-  const _StatCard({required this.title, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          children: [
-            Text(
-              '$value',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
-            ),
-            const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: kDarkBrown.withValues(alpha: 0.6))),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _CategoryCard extends StatelessWidget {
   final CategoryModel category;
   final VoidCallback onTap;
@@ -297,28 +202,21 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = colorFromHex(category.colorHex);
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(14),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: color.withValues(alpha: 0.12),
-                child: Icon(categoryIcon(category.icon), size: 22, color: color),
-              ),
-              const SizedBox(height: 8),
+              IconBox(categoryIcon(category.icon), color: kYellowSoft),
               Text(
                 category.name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kDarkBrown),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kBlack, height: 1.25),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -339,20 +237,15 @@ class _RetryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         child: Row(
           children: [
-            Icon(Icons.wifi_off, color: kDarkBrown.withValues(alpha: 0.5)),
+            const Icon(Icons.wifi_off, color: kGray),
             const SizedBox(width: 12),
-            Expanded(child: Text(message, style: const TextStyle(color: kDarkBrown))),
-            TextButton(
-              onPressed: onRetry,
-              style: TextButton.styleFrom(foregroundColor: kBurntOrange),
-              child: const Text('Retry'),
-            ),
+            Expanded(child: Text(message, style: const TextStyle(color: kBlack))),
+            TextButton(onPressed: onRetry, child: const Text('Retry')),
           ],
         ),
       ),
@@ -369,13 +262,10 @@ class RequestListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = statusColor(request.status);
     final hasRemarks = showRemarks && (request.remarks?.isNotEmpty ?? false);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => Navigator.push(
@@ -383,61 +273,48 @@ class RequestListCard extends StatelessWidget {
           MaterialPageRoute(builder: (_) => RequestDetailScreen(requestId: request.id)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: color.withValues(alpha: 0.12),
-                    child: Icon(statusIcon(request.status), color: color, size: 20),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: kDarkBrown, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${request.trackingCode} · ${request.category?.name ?? 'General'}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.6)),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          formatRelative(request.createdAt),
-                          style: TextStyle(fontSize: 11, color: kDarkBrown.withValues(alpha: 0.5)),
-                        ),
-                      ],
+                    child: Text(
+                      request.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kBlack),
                     ),
                   ),
                   const SizedBox(width: 8),
                   StatusChip(status: request.status),
                 ],
               ),
+              const SizedBox(height: 4),
+              Text(
+                request.category?.name ?? 'General',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 13, color: kBlack),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${request.trackingCode} · ${formatRelative(request.createdAt)}',
+                style: const TextStyle(fontSize: 12, color: kGray),
+              ),
               if (hasRemarks)
                 Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.only(top: 10, left: 52),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: kCreamGold.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: kYellowSoft, borderRadius: BorderRadius.circular(8)),
                   child: Text(
                     request.remarks!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: kDarkBrown),
+                    style: const TextStyle(fontSize: 12, color: kBlack),
                   ),
                 ),
             ],

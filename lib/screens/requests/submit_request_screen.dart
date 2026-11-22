@@ -22,12 +22,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
   int? _selectedCategoryId;
   String _priority = 'normal';
 
-  static const _priorities = [
-    ('low', Icons.arrow_downward),
-    ('normal', Icons.remove),
-    ('high', Icons.arrow_upward),
-    ('urgent', Icons.priority_high),
-  ];
+  static const _priorities = ['low', 'normal', 'high', 'urgent'];
 
   @override
   void initState() {
@@ -75,25 +70,6 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
     }
   }
 
-  InputDecoration _inputDecoration(String hint, {IconData? icon}) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: TextStyle(color: kDarkBrown.withValues(alpha: 0.5)),
-      prefixIcon: icon != null ? Icon(icon, color: kBurntOrange) : null,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: kDarkBrown.withValues(alpha: 0.3)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBurntOrange, width: 2),
-      ),
-      filled: true,
-      fillColor: kWhite,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final rp = context.watch<RequestProvider>();
@@ -108,17 +84,16 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _SectionHeader(icon: Icons.category, label: 'Select Service Type', required: true),
+                const _SectionHeader('Select Service Type', required: true),
                 const SizedBox(height: 12),
                 if (rp.categories.isEmpty && rp.categoriesFailed)
                   Row(
                     children: [
                       const Expanded(
-                        child: Text('Couldn\'t load services.', style: TextStyle(color: kDarkBrown)),
+                        child: Text('Couldn\'t load services.', style: TextStyle(color: kBlack)),
                       ),
                       TextButton(
                         onPressed: rp.fetchCategories,
-                        style: TextButton.styleFrom(foregroundColor: kBurntOrange),
                         child: const Text('Retry'),
                       ),
                     ],
@@ -131,37 +106,33 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                     runSpacing: 8,
                     children: rp.categories.map((cat) {
                       final isSelected = _selectedCategoryId == cat.id;
-                      final color = colorFromHex(cat.colorHex);
+                      final fg = isSelected ? kWhite : kBlack;
                       return FilterChip(
-                        label: Text(
-                          cat.name,
-                          style: TextStyle(
-                            color: isSelected ? kWhite : color,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          ),
-                        ),
+                        label: Text(cat.name),
+                        labelStyle: TextStyle(color: fg, fontWeight: FontWeight.w600),
                         selected: isSelected,
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _selectedCategoryId = cat.id),
                         backgroundColor: kWhite,
-                        selectedColor: color,
-                        avatar: Icon(categoryIcon(cat.icon), size: 16, color: isSelected ? kWhite : color),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(color: isSelected ? color : kDarkBrown.withValues(alpha: 0.2)),
-                        ),
+                        selectedColor: kBlack,
+                        avatar: Icon(categoryIcon(cat.icon), size: 16, color: fg),
+                        side: BorderSide(color: isSelected ? kBlack : kLine),
+                        shape: const StadiumBorder(),
                       );
                     }).toList(),
                   ),
                 const SizedBox(height: 24),
 
-                const _SectionHeader(icon: Icons.title, label: 'Request Title (optional)'),
+                const _SectionHeader('Request Title (optional)'),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _titleCtrl,
                   maxLength: 255,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: _inputDecoration('Leave blank to use the service name', icon: Icons.edit_note),
+                  decoration: const InputDecoration(
+                    hintText: 'Leave blank to use the service name',
+                    prefixIcon: Icon(Icons.edit_note),
+                  ),
                   validator: (v) {
                     final value = (v ?? '').trim();
                     if (value.isNotEmpty && value.length < 5) return 'Title must be at least 5 characters';
@@ -170,15 +141,17 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                const _SectionHeader(icon: Icons.description, label: 'Description', required: true),
+                const _SectionHeader('Description', required: true),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _descCtrl,
                   minLines: 4,
                   maxLines: 8,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: _inputDecoration(
-                    'Provide details about your request — purpose, dates, anything that helps staff process it faster.',
+                  decoration: const InputDecoration(
+                    hintText:
+                        'Provide details about your request — purpose, dates, anything that helps staff process it faster.',
+                    hintMaxLines: 3,
                   ),
                   validator: (v) {
                     final value = (v ?? '').trim();
@@ -189,33 +162,29 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                const _SectionHeader(icon: Icons.flag_outlined, label: 'Priority Level'),
+                const _SectionHeader('Priority Level'),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    for (final (value, icon) in _priorities) ...[
-                      Expanded(child: _priorityOption(value, icon)),
-                      if (value != _priorities.last.$1) const SizedBox(width: 8),
-                    ],
+                SegmentedButton<String>(
+                  segments: [
+                    for (final p in _priorities) ButtonSegment(value: p, label: Text(priorityLabel(p))),
                   ],
+                  selected: {_priority},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (selected) => setState(() => _priority = selected.first),
                 ),
                 const SizedBox(height: 20),
 
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: kBurntOrange.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kBurntOrange.withValues(alpha: 0.2)),
-                  ),
+                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, color: kBurntOrange, size: 20),
+                      const Icon(Icons.info_outline, color: kBlack, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Your request will be reviewed by barangay staff. You will receive notifications when its status changes.',
-                          style: TextStyle(fontSize: 12, color: kDarkBrown.withValues(alpha: 0.8)),
+                          style: TextStyle(fontSize: 12, color: kBlack.withValues(alpha: 0.8)),
                         ),
                       ),
                     ],
@@ -227,19 +196,16 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                   height: 52,
                   child: ElevatedButton.icon(
                     onPressed: rp.submitting ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
                     icon: rp.submitting
                         ? const SizedBox(
                             height: 18,
                             width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: kWhite),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: kBlack),
                           )
                         : const Icon(Icons.send, size: 18),
                     label: Text(
                       rp.submitting ? 'Submitting...' : 'Submit Request',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
@@ -251,62 +217,22 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
       ),
     );
   }
-
-  Widget _priorityOption(String value, IconData icon) {
-    final isSelected = _priority == value;
-    final color = priorityColor(value);
-    return InkWell(
-      onTap: () => setState(() => _priority = value),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? color : kDarkBrown.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: isSelected ? color : kDarkBrown.withValues(alpha: 0.5), size: 20),
-            const SizedBox(height: 4),
-            Text(
-              priorityLabel(value),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : kDarkBrown.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _SectionHeader extends StatelessWidget {
-  final IconData icon;
   final String label;
   final bool required;
 
-  const _SectionHeader({required this.icon, required this.label, this.required = false});
+  const _SectionHeader(this.label, {this.required = false});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: kBurntOrange.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+    return Text.rich(
+      TextSpan(
+        text: label,
+        children: [if (required) const TextSpan(text: ' *', style: TextStyle(color: kRed))],
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: kBurntOrange),
-          const SizedBox(width: 12),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: kDarkBrown)),
-          if (required) const Text(' *', style: TextStyle(color: Colors.red)),
-        ],
-      ),
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kBlack),
     );
   }
 }
