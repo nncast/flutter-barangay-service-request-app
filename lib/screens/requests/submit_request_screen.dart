@@ -113,10 +113,10 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                         selected: isSelected,
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _selectedCategoryId = cat.id),
-                        backgroundColor: kWhite,
+                        backgroundColor: kSurface,
                         selectedColor: kBlack,
                         avatar: Icon(categoryIcon(cat.icon), size: 16, color: fg),
-                        side: BorderSide(color: isSelected ? kBlack : kLine),
+                        side: BorderSide.none,
                         shape: const StadiumBorder(),
                       );
                     }).toList(),

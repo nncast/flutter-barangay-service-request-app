@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen> {
 /// Flat look: no shadows or tints, thin gray borders, black text,
 /// orange for actions and yellow for highlights.
 ThemeData _flatTheme() {
-  final radius = BorderRadius.circular(12);
+  final radius = BorderRadius.circular(16);
   OutlineInputBorder inputBorder([BorderSide side = BorderSide.none]) =>
       OutlineInputBorder(borderRadius: radius, borderSide: side);
 
@@ -150,14 +150,14 @@ ThemeData _flatTheme() {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.4),
-      shape: Border(bottom: BorderSide(color: kLine)),
+      titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: kBlack, letterSpacing: -0.6),
     ),
+    // Gray tiles on white, no borders or shadows.
     cardTheme: CardThemeData(
-      color: kWhite,
+      color: kSurface,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: kLine)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
     ),
     dividerTheme: const DividerThemeData(color: kLine, thickness: 1),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -168,7 +168,7 @@ ThemeData _flatTheme() {
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-        shape: RoundedRectangleBorder(borderRadius: radius),
+        shape: const StadiumBorder(),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -177,7 +177,7 @@ ThemeData _flatTheme() {
         side: const BorderSide(color: kBlack, width: 1.2),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-        shape: RoundedRectangleBorder(borderRadius: radius),
+        shape: const StadiumBorder(),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -188,24 +188,24 @@ ThemeData _flatTheme() {
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
-        backgroundColor: kWhite,
+        backgroundColor: kSurface,
         foregroundColor: kBlack,
         selectedBackgroundColor: kBlack,
         selectedForegroundColor: kWhite,
-        side: const BorderSide(color: kLine),
+        side: BorderSide.none,
         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-        shape: RoundedRectangleBorder(borderRadius: radius),
+        shape: const StadiumBorder(),
       ),
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: kOrange,
       foregroundColor: kBlack,
       elevation: 0,
       focusElevation: 0,
       hoverElevation: 0,
       highlightElevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      extendedTextStyle: const TextStyle(fontWeight: FontWeight.w700),
+      shape: StadiumBorder(),
+      extendedTextStyle: TextStyle(fontWeight: FontWeight.w700),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -222,22 +222,25 @@ ThemeData _flatTheme() {
       errorBorder: inputBorder(const BorderSide(color: kRed)),
       focusedErrorBorder: inputBorder(const BorderSide(color: kRed, width: 1.5)),
     ),
-    navigationBarTheme: const NavigationBarThemeData(
+    navigationBarTheme: NavigationBarThemeData(
       backgroundColor: kWhite,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       height: 68,
-      indicatorColor: kYellow,
-      iconTheme: WidgetStatePropertyAll(IconThemeData(color: kBlack)),
-      labelTextStyle: WidgetStatePropertyAll(
+      indicatorColor: kBlack,
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(color: states.contains(WidgetState.selected) ? kWhite : kBlack),
+      ),
+      labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kBlack),
       ),
     ),
+    // Black pill on the selected tab.
     tabBarTheme: const TabBarThemeData(
-      labelColor: kBlack,
+      labelColor: kWhite,
       unselectedLabelColor: kGray,
-      indicatorColor: kOrange,
-      indicatorSize: TabBarIndicatorSize.label,
+      indicator: ShapeDecoration(color: kBlack, shape: StadiumBorder()),
+      indicatorSize: TabBarIndicatorSize.tab,
       dividerColor: Colors.transparent,
       labelStyle: TextStyle(fontWeight: FontWeight.w700),
       unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500),

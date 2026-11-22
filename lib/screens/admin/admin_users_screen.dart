@@ -198,8 +198,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       padding: const EdgeInsets.only(right: 8),
       child: Chip(
         visualDensity: VisualDensity.compact,
-        backgroundColor: kWhite,
-        side: const BorderSide(color: kLine),
+        backgroundColor: kSurface,
+        side: BorderSide.none,
         shape: const StadiumBorder(),
         avatar: color == null ? null : Dot(color),
         label: Text(

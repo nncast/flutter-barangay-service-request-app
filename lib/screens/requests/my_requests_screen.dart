@@ -46,6 +46,8 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> with SingleTickerPr
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          indicatorPadding: const EdgeInsets.symmetric(vertical: 6),
           tabs: _tabs.map((status) {
             final label = status == 'all' ? 'All' : statusLabel(status);
             final count = countFor(status);

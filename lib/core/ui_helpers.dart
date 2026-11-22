@@ -180,8 +180,8 @@ class Tag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
       child: Text(
         label,
         style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700, color: onColor(color)),
@@ -223,7 +223,7 @@ class InitialsAvatar extends StatelessWidget {
   }
 }
 
-/// Icon on a soft square, used for info rows and service tiles.
+/// Icon in a filled circle, used for info rows and list items.
 class IconBox extends StatelessWidget {
   final IconData icon;
   final double size;
@@ -236,7 +236,7 @@ class IconBox extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       child: Icon(icon, size: size * 0.5, color: onColor(color)),
     );
   }
@@ -256,7 +256,7 @@ class SectionTitle extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: kBlack, letterSpacing: -0.2),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: kBlack, letterSpacing: -0.6),
           ),
         ),
         if (trailing != null) trailing!,
@@ -265,71 +265,129 @@ class SectionTitle extends StatelessWidget {
   }
 }
 
-/// Black greeting card at the top of both dashboards, with a few counts.
-class WelcomeCard extends StatelessWidget {
+/// Big "Hello, Maria!" heading with the user's initials, atop both dashboards.
+class Greeting extends StatelessWidget {
   final String name;
   final String initials;
-  final List<(String, int)> stats;
 
-  const WelcomeCard({super.key, required this.name, required this.initials, required this.stats});
+  const Greeting({super.key, required this.name, required this.initials});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: kBlack, borderRadius: BorderRadius.circular(18)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            'Hello,\n${name.trim().split(' ').first}!',
+            style: const TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+              color: kBlack,
+              height: 1.05,
+              letterSpacing: -1.2,
+            ),
+          ),
+        ),
+        InitialsAvatar(initials: initials, radius: 26),
+      ],
+    );
+  }
+}
+
+/// Round orange arrow button.
+class ArrowButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final String tooltip;
+
+  const ArrowButton({super.key, required this.onPressed, required this.tooltip});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filled(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: const Icon(Icons.arrow_forward),
+      style: IconButton.styleFrom(
+        backgroundColor: kOrange,
+        foregroundColor: kBlack,
+        fixedSize: const Size(52, 52),
+      ),
+    );
+  }
+}
+
+/// Black card with a row of counts, a big title and an arrow; the whole card is tappable.
+class HeroCard extends StatelessWidget {
+  final List<(String, int)> stats;
+  final String title;
+  final VoidCallback onTap;
+
+  const HeroCard({super.key, required this.stats, required this.title, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: kBlack,
+      borderRadius: BorderRadius.circular(26),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InitialsAvatar(initials: initials),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              IntrinsicHeight(
+                child: Row(
                   children: [
-                    Text('Welcome,', style: TextStyle(fontSize: 13, color: kWhite.withValues(alpha: 0.6))),
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: kWhite,
-                        letterSpacing: -0.3,
+                    for (final (i, (label, value)) in stats.indexed) ...[
+                      if (i > 0) VerticalDivider(width: 24, color: kWhite.withValues(alpha: 0.2)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12, color: kWhite.withValues(alpha: 0.6)),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$value',
+                              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w300, color: kYellow),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              for (final (label, value) in stats)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$value',
-                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: kYellow),
+              const SizedBox(height: 28),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: kWhite,
+                        height: 1.05,
+                        letterSpacing: -0.8,
                       ),
-                      Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: kWhite.withValues(alpha: 0.7)),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  ArrowButton(onPressed: onTap, tooltip: title.replaceAll('\n', ' ')),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

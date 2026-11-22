@@ -88,70 +88,70 @@ class AdminDashboardPage extends StatelessWidget {
     final stats = rp.dashboard;
 
     return Scaffold(
-      appBar: AppBar(title: Text(user?.isAdmin == true ? 'Admin Dashboard' : 'Staff Dashboard')),
-      body: RefreshIndicator(
-        onRefresh: () => Future.wait([rp.fetchDashboard(), rp.fetchAdminRequests()]),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            WelcomeCard(
-              name: user?.name ?? 'Admin',
-              initials: user?.initials ?? 'A',
-              stats: [
-                ('Today', stats.today),
-                ('This week', stats.thisWeek),
-                ('This month', stats.thisMonth),
-                ('All time', stats.total),
-              ],
-            ),
-            const SizedBox(height: 28),
-
-            const SectionTitle('Requests by Status'),
-            const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 180,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                mainAxisExtent: 84,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => Future.wait([rp.fetchDashboard(), rp.fetchAdminRequests()]),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            children: [
+              Greeting(name: user?.name ?? 'Admin', initials: user?.initials ?? 'A'),
+              const SizedBox(height: 20),
+              HeroCard(
+                stats: [
+                  ('Today', stats.today),
+                  ('This week', stats.thisWeek),
+                  ('This month', stats.thisMonth),
+                ],
+                title: '${stats.countFor('pending')} waiting\nfor review',
+                onTap: () => onOpenRequests('pending'),
               ),
-              itemCount: kStaffSettableStatuses.length,
-              itemBuilder: (ctx, i) {
-                final status = kStaffSettableStatuses[i];
-                return _AdminStatCard(
-                  status: status,
-                  value: stats.countFor(status),
-                  onTap: () => onOpenRequests(status),
-                );
-              },
-            ),
-            const SizedBox(height: 28),
-
-            SectionTitle(
-              'Recent Requests',
-              trailing: TextButton(onPressed: () => onOpenRequests('all'), child: const Text('See all')),
-            ),
-            const SizedBox(height: 8),
-            if (rp.loading && rp.requests.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (rp.requests.isEmpty)
-              Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                    child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kBlack)),
-                  ),
+              const SizedBox(height: 32),
+              const SectionTitle('Requests by Status'),
+              const SizedBox(height: 12),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 180,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  mainAxisExtent: 92,
                 ),
-              )
-            else
-              ...rp.requests.take(8).map((req) => AdminRequestCard(request: req)),
-          ],
+                itemCount: kStaffSettableStatuses.length,
+                itemBuilder: (ctx, i) {
+                  final status = kStaffSettableStatuses[i];
+                  return _AdminStatCard(
+                    status: status,
+                    value: stats.countFor(status),
+                    onTap: () => onOpenRequests(status),
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+              SectionTitle(
+                'Recent Requests',
+                trailing: ArrowButton(onPressed: () => onOpenRequests('all'), tooltip: 'See all'),
+              ),
+              const SizedBox(height: 12),
+              if (rp.loading && rp.requests.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (rp.requests.isEmpty)
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(
+                      child: Text(rp.error ?? 'No requests yet', style: const TextStyle(color: kBlack)),
+                    ),
+                  ),
+                )
+              else
+                ...rp.requests.take(8).map((req) => AdminRequestCard(request: req)),
+            ],
+          ),
         ),
       ),
     );
@@ -180,7 +180,7 @@ class _AdminStatCard extends StatelessWidget {
             children: [
               Text(
                 '$value',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kBlack, height: 1.1),
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: kBlack, height: 1.1),
               ),
               const SizedBox(height: 6),
               Row(
@@ -221,10 +221,12 @@ class AdminRequestCard extends StatelessWidget {
       child: InkWell(
         onTap: () => showRequestDetails(context, request),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              IconBox(categoryIcon(request.category?.icon), size: 44, color: kBlack),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,9 +372,8 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
                 icon: Icons.person,
                 title: 'Requested By',
                 content: request.user?.name ?? 'Unknown',
-                subtitle: [request.user?.email, request.user?.phone]
-                    .where((v) => v != null && v.isNotEmpty)
-                    .join(' · '),
+                subtitle:
+                    [request.user?.email, request.user?.phone].where((v) => v != null && v.isNotEmpty).join(' · '),
               ),
               _InfoSection(icon: Icons.title, title: 'Title', content: request.title),
               Row(
@@ -458,7 +459,8 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
                   child: step == steps.last
                       ? ElevatedButton(
                           onPressed: () => _apply(step),
-                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14)),
+                          style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14)),
                           child: Text(_stepLabels[step]!, textAlign: TextAlign.center),
                         )
                       : OutlinedButton(
@@ -469,7 +471,8 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
                                   foregroundColor: kRed,
                                   side: const BorderSide(color: kRed, width: 1.2),
                                 )
-                              : OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14)),
+                              : OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14)),
                           child: Text(_stepLabels[step]!, textAlign: TextAlign.center),
                         ),
                 ),
@@ -833,9 +836,9 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
       selected: isSelected,
       showCheckmark: false,
       onSelected: (_) => widget.filter.value = status,
-      backgroundColor: kWhite,
+      backgroundColor: kSurface,
       selectedColor: kBlack,
-      side: BorderSide(color: isSelected ? kBlack : kLine),
+      side: BorderSide.none,
       shape: const StadiumBorder(),
     );
   }

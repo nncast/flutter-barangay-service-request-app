@@ -95,99 +95,93 @@ class DashboardPage extends StatelessWidget {
     final active = requests.where((r) => !['completed', 'rejected', 'cancelled'].contains(r.status)).length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: RefreshIndicator(
-        onRefresh: () => Future.wait([
-          rp.fetchRequests(),
-          rp.fetchNotifications(),
-          if (rp.categories.isEmpty) rp.fetchCategories(),
-        ]),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            WelcomeCard(
-              name: user?.name ?? 'Resident',
-              initials: user?.initials ?? 'U',
-              stats: [
-                ('Total', requests.length),
-                ('Active', active),
-                ('Completed', requests.where((r) => r.status == 'completed').length),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => _openSubmit(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Submit New Request'),
-            ),
-            const SizedBox(height: 28),
-
-            const SectionTitle('Available Services'),
-            const SizedBox(height: 12),
-            if (rp.categories.isEmpty && rp.categoriesFailed)
-              _RetryCard(
-                message: 'Couldn\'t load services.',
-                onRetry: rp.fetchCategories,
-              )
-            else if (rp.categories.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 220,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  mainAxisExtent: 104,
-                ),
-                itemCount: rp.categories.length,
-                itemBuilder: (ctx, i) {
-                  final cat = rp.categories[i];
-                  return _CategoryCard(category: cat, onTap: () => _openSubmit(context, cat));
-                },
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => Future.wait([
+            rp.fetchRequests(),
+            rp.fetchNotifications(),
+            if (rp.categories.isEmpty) rp.fetchCategories(),
+          ]),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            children: [
+              Greeting(name: user?.name ?? 'Resident', initials: user?.initials ?? 'U'),
+              const SizedBox(height: 20),
+              HeroCard(
+                stats: [
+                  ('Total', requests.length),
+                  ('Active', active),
+                  ('Completed', requests.where((r) => r.status == 'completed').length),
+                ],
+                title: 'Submit a new\nrequest',
+                onTap: () => _openSubmit(context),
               ),
-            const SizedBox(height: 28),
-
-            SectionTitle(
-              'Recent Requests',
-              trailing: requests.isEmpty ? null : TextButton(onPressed: onSeeAll, child: const Text('See all')),
-            ),
-            const SizedBox(height: 8),
-            if (rp.loading && requests.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (rp.error != null && requests.isEmpty)
-              _RetryCard(message: rp.error!, onRetry: rp.fetchRequests)
-            else if (requests.isEmpty)
-              const Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Column(
-                    children: [
-                      IconBox(Icons.inbox_outlined, size: 56),
-                      SizedBox(height: 12),
-                      Text('No requests yet', style: TextStyle(fontWeight: FontWeight.w700, color: kBlack)),
-                      SizedBox(height: 4),
-                      Text(
-                        'Tap the button above to submit your first request',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: kGray),
-                      ),
-                    ],
+              const SizedBox(height: 32),
+              const SectionTitle('Available Services'),
+              const SizedBox(height: 12),
+              if (rp.categories.isEmpty && rp.categoriesFailed)
+                _RetryCard(
+                  message: 'Couldn\'t load services.',
+                  onRetry: rp.fetchCategories,
+                )
+              else if (rp.categories.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 220,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    mainAxisExtent: 116,
                   ),
+                  itemCount: rp.categories.length,
+                  itemBuilder: (ctx, i) {
+                    final cat = rp.categories[i];
+                    return _CategoryCard(category: cat, onTap: () => _openSubmit(context, cat));
+                  },
                 ),
-              )
-            else
-              ...requests.take(5).map((req) => RequestListCard(request: req)),
-            const SizedBox(height: 12),
-          ],
+              const SizedBox(height: 32),
+              SectionTitle(
+                'Recent Requests',
+                trailing: requests.isEmpty ? null : ArrowButton(onPressed: onSeeAll, tooltip: 'See all'),
+              ),
+              const SizedBox(height: 12),
+              if (rp.loading && requests.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (rp.error != null && requests.isEmpty)
+                _RetryCard(message: rp.error!, onRetry: rp.fetchRequests)
+              else if (requests.isEmpty)
+                const Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Column(
+                      children: [
+                        IconBox(Icons.inbox_outlined, size: 56, color: kWhite),
+                        SizedBox(height: 12),
+                        Text('No requests yet', style: TextStyle(fontWeight: FontWeight.w700, color: kBlack)),
+                        SizedBox(height: 4),
+                        Text(
+                          'Tap the card above to submit your first request',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12, color: kGray),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ...requests.take(5).map((req) => RequestListCard(request: req)),
+            ],
+          ),
         ),
       ),
     );
@@ -208,17 +202,20 @@ class _CategoryCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconBox(categoryIcon(category.icon), color: kYellowSoft),
               Text(
                 category.name,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kBlack, height: 1.25),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kBlack, height: 1.2),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+              ),
+              const Spacer(),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Icon(categoryIcon(category.icon), size: 34, color: kOrange),
               ),
             ],
           ),
@@ -273,41 +270,48 @@ class RequestListCard extends StatelessWidget {
           MaterialPageRoute(builder: (_) => RequestDetailScreen(requestId: request.id)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  IconBox(categoryIcon(request.category?.icon), size: 44, color: kBlack),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      request.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kBlack),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          request.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kBlack),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          request.category?.name ?? 'General',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13, color: kBlack),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${request.trackingCode} · ${formatRelative(request.createdAt)}',
+                          style: const TextStyle(fontSize: 12, color: kGray),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 8),
                   StatusChip(status: request.status),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                request.category?.name ?? 'General',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 13, color: kBlack),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${request.trackingCode} · ${formatRelative(request.createdAt)}',
-                style: const TextStyle(fontSize: 12, color: kGray),
-              ),
               if (hasRemarks)
                 Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.only(top: 10),
+                  margin: const EdgeInsets.only(top: 10, left: 56),
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(color: kYellowSoft, borderRadius: BorderRadius.circular(8)),
                   child: Text(
