@@ -86,7 +86,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return TopGlow(
+        child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -110,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -166,6 +168,7 @@ ThemeData _flatTheme() {
       style: ElevatedButton.styleFrom(
         backgroundColor: kOrange,
         foregroundColor: kWhite,
+        backgroundBuilder: gradientBackground(kOrangeGradient),
         disabledBackgroundColor: kLine,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

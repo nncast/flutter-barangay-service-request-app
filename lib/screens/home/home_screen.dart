@@ -60,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
         action: RoundButton(
           icon: Icons.add,
           tooltip: 'New request',
+          gradient: kOrangeGradient,
           size: 64,
           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubmitRequestScreen())),
         ),
@@ -88,7 +89,9 @@ class DashboardPage extends StatelessWidget {
     final requests = rp.requests;
     final active = requests.where((r) => !['completed', 'rejected', 'cancelled'].contains(r.status)).length;
 
-    return Scaffold(
+    return TopGlow(
+        child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => Future.wait([
@@ -187,7 +190,7 @@ class DashboardPage extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

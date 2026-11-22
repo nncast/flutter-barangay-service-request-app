@@ -111,6 +111,20 @@ void main() {
       expect(contrastRatio(over(kWhite, 0.75, kNavy), kNavy), atLeast(4.5)); // unselected nav items
     });
 
+    test('white text stays readable across the gradients (4.5:1)', () {
+      for (final stop in [kOrange, kOrangeDeep, kNavyLight, kNavyDeep]) {
+        expect(contrastRatio(kWhite, stop), atLeast(4.5), reason: '$stop');
+      }
+      for (final stop in [kNavyLight, kNavyDeep]) {
+        expect(contrastRatio(over(kWhite, 0.85, stop), stop), atLeast(4.5)); // unselected nav items
+      }
+      for (final bg in [kPeach, kCanvas]) {
+        expect(contrastRatio(kInk, bg), atLeast(4.5));
+        expect(contrastRatio(kGray, bg), atLeast(4.5)); // the date in the header
+        expect(contrastRatio(kOrange, bg), atLeast(3)); // greeting accent, 30 pt bold
+      }
+    });
+
     test('field outlines and state indicators (3:1)', () {
       for (final bg in [kWhite, kCanvas]) {
         expect(contrastRatio(kOutline, bg), atLeast(3));

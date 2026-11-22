@@ -79,7 +79,9 @@ class AdminDashboardPage extends StatelessWidget {
     final user = context.watch<AuthProvider>().user;
     final stats = rp.dashboard;
 
-    return Scaffold(
+    return TopGlow(
+        child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => Future.wait([rp.fetchDashboard(), rp.fetchAdminRequests()]),
@@ -150,7 +152,7 @@ class AdminDashboardPage extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -341,8 +343,7 @@ class _RequestDetailsDialogState extends State<_RequestDetailsDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Tracking Code', style: TextStyle(fontSize: 11, color: kGray)),
-                          Text(request.trackingCode,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: kInk)),
+                          Text(request.trackingCode, style: const TextStyle(fontWeight: FontWeight.bold, color: kInk)),
                         ],
                       ),
                     ),

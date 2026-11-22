@@ -259,7 +259,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: kRed, foregroundColor: kWhite),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kRed,
+              foregroundColor: kWhite,
+              backgroundBuilder: (context, states, child) => child!,
+            ),
             child: const Text('Delete'),
           ),
         ],

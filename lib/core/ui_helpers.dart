@@ -20,6 +20,33 @@ const Color kSurface = Color(0xFFF5EFE9);
 const Color kRed = Color(0xFFDC2626);
 const Color kMuted = Color(0xFFA0958D);
 
+/// Faint peach glow at the top of the dashboards and login.
+const Color kPeach = Color(0xFFFBE3CF);
+
+/// The logo's BARANGAY lettering runs from orange to brown; the main buttons
+/// and the summary card do too. White text stays above 4.5:1 across it.
+const Color kOrangeDeep = Color(0xFF8E3B22);
+const LinearGradient kOrangeGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [kOrange, kOrangeDeep],
+);
+
+/// Gentle navy gradient for the navigation and dark buttons.
+const Color kNavyLight = Color(0xFF3A5FA6);
+const Color kNavyDeep = Color(0xFF223D72);
+const LinearGradient kNavyGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [kNavyLight, kNavyDeep],
+);
+
+/// Paints [gradient] behind a button's content, for `ButtonStyle.backgroundBuilder`.
+ButtonLayerBuilder gradientBackground(Gradient gradient) =>
+    (context, states, child) => states.contains(WidgetState.disabled)
+        ? child!
+        : DecoratedBox(decoration: ShapeDecoration(shape: const StadiumBorder(), gradient: gradient), child: child);
+
 /// Field outlines: at least 3:1 against white and the canvas (WCAG 1.4.11).
 const Color kOutline = Color(0xFF8A7E76);
 
@@ -286,6 +313,7 @@ class RoundButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback? onPressed;
   final Color color;
+  final Gradient? gradient;
   final double size;
 
   const RoundButton({
@@ -294,21 +322,25 @@ class RoundButton extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     this.color = kOrange,
+    this.gradient,
     this.size = 52,
   });
 
   @override
   Widget build(BuildContext context) {
-    return IconButton.filled(
+    final button = IconButton.filled(
       onPressed: onPressed,
       tooltip: tooltip,
       icon: Icon(icon),
       style: IconButton.styleFrom(
-        backgroundColor: color,
+        backgroundColor: gradient == null ? color : Colors.transparent,
         foregroundColor: onColor(color),
         fixedSize: Size.square(size),
       ),
     );
+    return gradient == null
+        ? button
+        : DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient), child: button);
   }
 }
 
@@ -397,7 +429,14 @@ class Greeting extends StatelessWidget {
             children: [
               TextSpan(text: 'Good $partOfDay, ${name.trim().split(' ').first}\n'),
               TextSpan(text: lead, style: const TextStyle(color: kGray)),
-              TextSpan(text: accent, style: const TextStyle(color: kOrangeDark)),
+              TextSpan(
+                text: accent,
+                style: TextStyle(
+                  foreground: Paint()
+                    ..shader = const LinearGradient(colors: [kOrange, kOrangeDeep])
+                        .createShader(const Rect.fromLTWH(0, 0, 360, 80)),
+                ),
+              ),
             ],
           ),
           style: const TextStyle(
@@ -436,61 +475,82 @@ class HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: kOrange, borderRadius: BorderRadius.circular(28)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(gradient: kOrangeGradient, borderRadius: BorderRadius.circular(28)),
+      child: Stack(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: const ShapeDecoration(color: kYellowSoft, shape: StadiumBorder()),
-                child: Text(
-                  tag,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk),
-                ),
+          // A soft light behind the icon in the corner.
+          Positioned(
+            right: -60,
+            top: -60,
+            child: Container(
+              width: 190,
+              height: 190,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [Color(0x55F6C08F), Color(0x00F6C08F)]),
               ),
-              const Spacer(),
-              ExcludeSemantics(child: Icon(icon, size: 44, color: kWhite)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: kWhite,
-              height: 1.08,
-              letterSpacing: -0.8,
             ),
           ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: const ShapeDecoration(color: kWhite, shape: StadiumBorder()),
-            child: Row(
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    summary,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kInk),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: const ShapeDecoration(color: kYellowSoft, shape: StadiumBorder()),
+                      child: Text(
+                        tag,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kInk),
+                      ),
+                    ),
+                    const Spacer(),
+                    ExcludeSemantics(child: Icon(icon, size: 44, color: kWhite)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: kWhite,
+                    height: 1.08,
+                    letterSpacing: -0.8,
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: onAction,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kNavy,
-                    foregroundColor: kWhite,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: const ShapeDecoration(color: kWhite, shape: StadiumBorder()),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          summary,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kInk),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: onAction,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kNavy,
+                          foregroundColor: kWhite,
+                          backgroundBuilder: gradientBackground(kNavyGradient),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        ),
+                        child: Text(actionLabel),
+                      ),
+                    ],
                   ),
-                  child: Text(actionLabel),
                 ),
               ],
             ),
@@ -531,7 +591,7 @@ class FloatingNavBar extends StatelessWidget {
               child: Container(
                 height: 64,
                 padding: const EdgeInsets.all(5),
-                decoration: const ShapeDecoration(color: kNavy, shape: StadiumBorder()),
+                decoration: const ShapeDecoration(gradient: kNavyGradient, shape: StadiumBorder()),
                 child: Row(
                   children: [
                     for (final (i, item) in items.indexed)
@@ -559,7 +619,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = selected ? kNavy : kWhite.withValues(alpha: 0.75);
+    final fg = selected ? kNavy : kWhite.withValues(alpha: 0.85);
     return Semantics(
       selected: selected,
       child: Material(
@@ -637,4 +697,25 @@ class Dot extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       );
+}
+
+/// Faint peach glow at the top of a page, fading into the canvas.
+class TopGlow extends StatelessWidget {
+  final Widget child;
+
+  const TopGlow({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment(0, -0.2),
+          colors: [kPeach, kCanvas],
+        ),
+      ),
+      child: child,
+    );
+  }
 }
