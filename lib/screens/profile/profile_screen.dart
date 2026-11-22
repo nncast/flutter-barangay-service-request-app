@@ -137,7 +137,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             const SizedBox(height: 4),
             const Text(
-              'Version 1.0.0',
+              'Version 1.4.0',
               style: TextStyle(
                 fontSize: 12,
                 color: kGray,
