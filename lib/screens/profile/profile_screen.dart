@@ -34,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: kCharcoal, letterSpacing: -0.3),
                   ),
                   const SizedBox(height: 8),
-                  Tag(label: user?.role.toUpperCase() ?? 'RESIDENT', color: kCharcoal),
+                  Tag(label: user?.role.toUpperCase() ?? 'RESIDENT', tone: roleTone(user?.role ?? 'resident')),
                 ],
               ),
             ),
@@ -82,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
-          IconBox(icon, size: 40),
+          IconBox(icon, size: 40, color: kWhite),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -102,7 +102,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _actionTile(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: IconBox(icon, size: 40),
+      leading: IconBox(icon, size: 40, color: kWhite),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: kCharcoal)),
       trailing: const Icon(Icons.chevron_right, color: kGray),
       onTap: onTap,

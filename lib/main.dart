@@ -142,9 +142,9 @@ ThemeData _flatTheme() {
       surfaceContainerHigh: kWhite,
       surfaceContainerHighest: kSurface,
     ),
-    scaffoldBackgroundColor: kWhite,
+    scaffoldBackgroundColor: kCanvas,
     appBarTheme: const AppBarTheme(
-      backgroundColor: kWhite,
+      backgroundColor: kCanvas,
       foregroundColor: kCharcoal,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -152,13 +152,15 @@ ThemeData _flatTheme() {
       centerTitle: false,
       titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: kCharcoal, letterSpacing: -0.6),
     ),
-    // Gray tiles on white, no borders or shadows.
+    // White cards on the warm canvas, no borders or shadows.
     cardTheme: CardThemeData(
-      color: kSurface,
+      color: kWhite,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     ),
+    // Icon buttons sit in white circles, e.g. back, refresh, bell.
+    iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(backgroundColor: kWhite)),
     dividerTheme: const DividerThemeData(color: kLine, thickness: 1),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -188,7 +190,7 @@ ThemeData _flatTheme() {
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
-        backgroundColor: kSurface,
+        backgroundColor: kWhite,
         foregroundColor: kCharcoal,
         selectedBackgroundColor: kCharcoal,
         selectedForegroundColor: kWhite,
@@ -209,7 +211,7 @@ ThemeData _flatTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: kSurface,
+      fillColor: kWhite,
       prefixIconColor: kGray,
       suffixIconColor: kGray,
       labelStyle: const TextStyle(color: kGray),
@@ -221,19 +223,6 @@ ThemeData _flatTheme() {
       focusedBorder: inputBorder(const BorderSide(color: kCharcoal, width: 1.5)),
       errorBorder: inputBorder(const BorderSide(color: kRed)),
       focusedErrorBorder: inputBorder(const BorderSide(color: kRed, width: 1.5)),
-    ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: kWhite,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      height: 68,
-      indicatorColor: kCharcoal,
-      iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(color: states.contains(WidgetState.selected) ? kWhite : kCharcoal),
-      ),
-      labelTextStyle: const WidgetStatePropertyAll(
-        TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kCharcoal),
-      ),
     ),
     // Charcoal pill on the selected tab.
     tabBarTheme: const TabBarThemeData(

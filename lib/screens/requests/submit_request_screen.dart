@@ -113,7 +113,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
                         selected: isSelected,
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _selectedCategoryId = cat.id),
-                        backgroundColor: kSurface,
+                        backgroundColor: kWhite,
                         selectedColor: kCharcoal,
                         avatar: Icon(categoryIcon(cat.icon), size: 16, color: fg),
                         side: BorderSide.none,
@@ -176,7 +176,7 @@ class _SubmitRequestScreenState extends State<SubmitRequestScreen> {
 
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(color: kWhite, borderRadius: BorderRadius.circular(16)),
                   child: const Row(
                     children: [
                       Icon(Icons.info_outline, color: kCharcoal, size: 20),

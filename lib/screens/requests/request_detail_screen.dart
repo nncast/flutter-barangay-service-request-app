@@ -156,7 +156,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               children: [
                 Row(
                   children: [
-                    IconBox(statusIcon(req.status), size: 40, color: statusColor(req.status)),
+                    IconBox(statusIcon(req.status), size: 40, color: statusTone(req.status).bg, iconColor: statusTone(req.status).fg),
                     const SizedBox(width: 12),
                     StatusChip(status: req.status, fontSize: 13),
                   ],
@@ -281,7 +281,7 @@ class _HistoryEntry extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Tag(label: log.newStatusLabel, color: statusColor(log.newStatus)),
+          Tag(label: log.newStatusLabel, tone: statusTone(log.newStatus)),
           if (log.note?.isNotEmpty ?? false)
             Padding(
               padding: const EdgeInsets.only(top: 6),

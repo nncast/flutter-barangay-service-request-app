@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 // Shared colors and formatting so every screen shows statuses the same way.
 
-// Flat palette: charcoal (never pure black) and white, orange for actions,
-// yellow for highlights.
+// Flat palette: charcoal (never pure black) on a warm light gray, white cards,
+// orange for actions, yellow for highlights.
 const Color kWhite = Color(0xFFFFFFFF);
 const Color kCharcoal = Color(0xFF2A2826);
+const Color kCanvas = Color(0xFFF3F1EF);
 const Color kOrange = Color(0xFFF97316);
+const Color kOrangeDark = Color(0xFFC2410C);
 const Color kYellow = Color(0xFFFFC72C);
 const Color kYellowSoft = Color(0xFFFFF4CC);
 const Color kGray = Color(0xFF6B6B6B);
 const Color kLine = Color(0xFFE6E6E6);
 const Color kSurface = Color(0xFFF5F5F5);
 const Color kRed = Color(0xFFDC2626);
-const Color kOrangeDark = Color(0xFFC2410C);
-/// Field outlines: at least 3:1 against white and the gray fills (WCAG 1.4.11).
-const Color kOutline = Color(0xFF858585);
 const Color kMuted = Color(0xFF9E9E9E);
+
+/// Field outlines: at least 3:1 against white and the canvas (WCAG 1.4.11).
+const Color kOutline = Color(0xFF858585);
 
 /// WCAG contrast ratio, from 1 to 21. Text needs 4.5 (AA), icons and outlines 3.
 double contrastRatio(Color a, Color b) {
@@ -26,6 +29,26 @@ double contrastRatio(Color a, Color b) {
 
 /// Charcoal or white, whichever has the higher contrast on [color].
 Color onColor(Color color) => contrastRatio(color, kCharcoal) >= contrastRatio(color, kWhite) ? kCharcoal : kWhite;
+
+/// A soft tint for backgrounds, a dark shade of the same hue for text on it
+/// (at least 4.5:1), and a stronger color for dots.
+typedef Tone = ({Color bg, Color fg, Color dot});
+
+const Tone kAmber = (bg: Color(0xFFFEF3C7), fg: Color(0xFF92400E), dot: Color(0xFFF59E0B));
+const Tone kBlue = (bg: Color(0xFFDBEAFE), fg: Color(0xFF1E40AF), dot: Color(0xFF3B82F6));
+const Tone kTeal = (bg: Color(0xFFCCFBF1), fg: Color(0xFF115E59), dot: Color(0xFF14B8A6));
+const Tone kOrangeTone = (bg: Color(0xFFFFEDD5), fg: Color(0xFF9A3412), dot: kOrange);
+const Tone kGreen = (bg: Color(0xFFDCFCE7), fg: Color(0xFF166534), dot: Color(0xFF22C55E));
+const Tone kRedTone = (bg: Color(0xFFFEE2E2), fg: Color(0xFF991B1B), dot: Color(0xFFEF4444));
+const Tone kViolet = (bg: Color(0xFFEDE9FE), fg: Color(0xFF5B21B6), dot: Color(0xFF8B5CF6));
+const Tone kGrayTone = (bg: Color(0xFFEEEEEE), fg: Color(0xFF4A4A4A), dot: kMuted);
+
+/// Tone for a color that comes from the API, such as a category's.
+Tone toneOf(Color color) => (
+      bg: Color.alphaBlend(color.withValues(alpha: 0.14), kWhite),
+      fg: Color.lerp(color, kCharcoal, 0.3)!,
+      dot: color,
+    );
 
 /// Request statuses in workflow order. `cancelled` is set by residents only.
 const List<String> kRequestStatuses = [
@@ -72,25 +95,20 @@ String statusLabel(String? status) {
   }
 }
 
-/// Yellow → orange → charcoal as a request moves along; red and gray when it stops.
-Color statusColor(String? status) {
-  switch (status) {
-    case 'pending':
-      return kYellow;
-    case 'in_review':
-      return const Color(0xFFFFA41B);
-    case 'approved':
-      return kOrange;
-    case 'processing':
-      return kOrangeDark;
-    case 'completed':
-      return kCharcoal;
-    case 'rejected':
-      return kRed;
-    default:
-      return kMuted;
-  }
-}
+/// Waiting is amber, being looked at blue, approved teal, in progress orange,
+/// done green, rejected red, cancelled gray.
+Tone statusTone(String? status) => switch (status) {
+      'pending' => kAmber,
+      'in_review' => kBlue,
+      'approved' => kTeal,
+      'processing' => kOrangeTone,
+      'completed' => kGreen,
+      'rejected' => kRedTone,
+      _ => kGrayTone,
+    };
+
+/// Dot color for a status.
+Color statusColor(String? status) => statusTone(status).dot;
 
 IconData statusIcon(String? status) {
   switch (status) {
@@ -116,16 +134,18 @@ IconData statusIcon(String? status) {
 String priorityLabel(String priority) =>
     priority.isEmpty ? 'Normal' : priority[0].toUpperCase() + priority.substring(1);
 
-Color priorityColor(String priority) {
-  switch (priority) {
-    case 'high':
-      return kOrange;
-    case 'urgent':
-      return kRed;
-    default:
-      return kLine;
-  }
-}
+Tone priorityTone(String priority) => switch (priority) {
+      'high' => kOrangeTone,
+      'urgent' => kRedTone,
+      _ => kGrayTone,
+    };
+
+Tone roleTone(String role) => switch (role) {
+      'admin' => kViolet,
+      'staff' => kBlue,
+      'resident' => kAmber,
+      _ => kGrayTone,
+    };
 
 /// Maps the icon names stored on categories (Heroicons-style) to Material icons.
 IconData categoryIcon(String? name) {
@@ -149,6 +169,13 @@ IconData categoryIcon(String? name) {
     default:
       return Icons.category_outlined;
   }
+}
+
+/// Parses "#RRGGBB"; anything else gives [fallback].
+Color colorFromHex(String? hex, {Color fallback = kOrange}) {
+  final value = (hex ?? '').replaceFirst('#', '');
+  final parsed = value.length == 6 ? int.tryParse(value, radix: 16) : null;
+  return parsed == null ? fallback : Color(0xFF000000 | parsed);
 }
 
 DateTime? _parseLocal(String value) => DateTime.tryParse(value)?.toLocal();
@@ -177,22 +204,22 @@ String formatRelative(String value) {
   return '${_months[dt.month - 1]} ${dt.day}, ${dt.year}';
 }
 
-/// Small filled label, e.g. a status or a priority.
+/// Small pill label in a soft tint, e.g. a status, priority or role.
 class Tag extends StatelessWidget {
   final String label;
-  final Color color;
+  final Tone tone;
   final double fontSize;
 
-  const Tag({super.key, required this.label, required this.color, this.fontSize = 11});
+  const Tag({super.key, required this.label, required this.tone, this.fontSize = 11});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: tone.bg, borderRadius: BorderRadius.circular(20)),
       child: Text(
         label,
-        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700, color: onColor(color)),
+        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700, color: tone.fg),
       ),
     );
   }
@@ -206,8 +233,7 @@ class StatusChip extends StatelessWidget {
   const StatusChip({super.key, required this.status, this.fontSize = 11});
 
   @override
-  Widget build(BuildContext context) =>
-      Tag(label: statusLabel(status), color: statusColor(status), fontSize: fontSize);
+  Widget build(BuildContext context) => Tag(label: statusLabel(status), tone: statusTone(status), fontSize: fontSize);
 }
 
 /// Initials in a filled circle.
@@ -215,8 +241,9 @@ class InitialsAvatar extends StatelessWidget {
   final String initials;
   final double radius;
   final Color color;
+  final Color? textColor;
 
-  const InitialsAvatar({super.key, required this.initials, this.radius = 24, this.color = kYellow});
+  const InitialsAvatar({super.key, required this.initials, this.radius = 24, this.color = kYellow, this.textColor});
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +252,7 @@ class InitialsAvatar extends StatelessWidget {
       backgroundColor: color,
       child: Text(
         initials,
-        style: TextStyle(fontSize: radius * 0.75, fontWeight: FontWeight.w800, color: onColor(color)),
+        style: TextStyle(fontSize: radius * 0.75, fontWeight: FontWeight.w800, color: textColor ?? onColor(color)),
       ),
     );
   }
@@ -236,8 +263,9 @@ class IconBox extends StatelessWidget {
   final IconData icon;
   final double size;
   final Color color;
+  final Color? iconColor;
 
-  const IconBox(this.icon, {super.key, this.size = 36, this.color = kSurface});
+  const IconBox(this.icon, {super.key, this.size = 36, this.color = kSurface, this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -245,17 +273,49 @@ class IconBox extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon, size: size * 0.5, color: onColor(color)),
+      child: Icon(icon, size: size * 0.5, color: iconColor ?? onColor(color)),
     );
   }
 }
 
-/// Section heading on a page.
+/// Round filled icon button, e.g. the orange "+" or the white bell.
+class RoundButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final Color color;
+  final double size;
+
+  const RoundButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.color = kOrange,
+    this.size = 52,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filled(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: Icon(icon),
+      style: IconButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: onColor(color),
+        fixedSize: Size.square(size),
+      ),
+    );
+  }
+}
+
+/// Section heading on a page, with an optional "View all".
 class SectionTitle extends StatelessWidget {
   final String text;
-  final Widget? trailing;
+  final VoidCallback? onViewAll;
 
-  const SectionTitle(this.text, {super.key, this.trailing});
+  const SectionTitle(this.text, {super.key, this.onViewAll});
 
   @override
   Widget build(BuildContext context) {
@@ -264,159 +324,266 @@ class SectionTitle extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: kCharcoal, letterSpacing: -0.6),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kCharcoal, letterSpacing: -0.5),
           ),
         ),
-        if (trailing != null) trailing!,
+        if (onViewAll != null)
+          TextButton(
+            onPressed: onViewAll,
+            style: TextButton.styleFrom(foregroundColor: kGray),
+            child: const Text('View all'),
+          ),
       ],
     );
   }
 }
 
-/// Big "Hello, Maria!" heading with the user's initials, atop both dashboards.
+/// Avatar, today's date and an optional bell, above a big two-tone greeting:
+/// "Good evening, Maria / Here's your request update."
 class Greeting extends StatelessWidget {
   final String name;
   final String initials;
+  final String lead;
+  final String accent;
+  final VoidCallback? onBell;
+  final int unread;
 
-  const Greeting({super.key, required this.name, required this.initials});
+  const Greeting({
+    super.key,
+    required this.name,
+    required this.initials,
+    required this.lead,
+    required this.accent,
+    this.onBell,
+    this.unread = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final now = DateTime.now();
+    final partOfDay = now.hour < 12 ? 'morning' : (now.hour < 18 ? 'afternoon' : 'evening');
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Text(
-            'Hello,\n${name.trim().split(' ').first}!',
-            style: const TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w700,
-              color: kCharcoal,
-              height: 1.05,
-              letterSpacing: -1.2,
+        Row(
+          children: [
+            InitialsAvatar(initials: initials, radius: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                DateFormat('EEEE, MMMM d').format(now),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kGray),
+              ),
             ),
+            if (onBell != null)
+              Badge(
+                isLabelVisible: unread > 0,
+                label: Text('$unread'),
+                child: RoundButton(
+                  icon: Icons.notifications_none,
+                  tooltip: 'Alerts',
+                  onPressed: onBell,
+                  color: kWhite,
+                  size: 48,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: 'Good $partOfDay, ${name.trim().split(' ').first}\n'),
+              TextSpan(text: lead, style: const TextStyle(color: kGray)),
+              TextSpan(text: accent, style: const TextStyle(color: kOrangeDark)),
+            ],
+          ),
+          style: const TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w700,
+            color: kCharcoal,
+            height: 1.12,
+            letterSpacing: -0.8,
           ),
         ),
-        InitialsAvatar(initials: initials, radius: 26),
       ],
     );
   }
 }
 
-/// Round orange arrow button.
-class ArrowButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final String tooltip;
+/// Orange summary card: a small tag, a big title, and a white pill row with
+/// a one-line summary and a charcoal action button.
+class HeroCard extends StatelessWidget {
+  final String tag;
+  final IconData icon;
+  final String title;
+  final String summary;
+  final String actionLabel;
+  final VoidCallback onAction;
 
-  const ArrowButton({super.key, required this.onPressed, required this.tooltip});
+  const HeroCard({
+    super.key,
+    required this.tag,
+    required this.icon,
+    required this.title,
+    required this.summary,
+    required this.actionLabel,
+    required this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return IconButton.filled(
-      onPressed: onPressed,
-      tooltip: tooltip,
-      icon: const Icon(Icons.arrow_forward),
-      style: IconButton.styleFrom(
-        backgroundColor: kOrange,
-        foregroundColor: kCharcoal,
-        fixedSize: const Size(52, 52),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: kOrange, borderRadius: BorderRadius.circular(28)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: const ShapeDecoration(color: kYellowSoft, shape: StadiumBorder()),
+                child: Text(
+                  tag,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kCharcoal),
+                ),
+              ),
+              const Spacer(),
+              ExcludeSemantics(child: Icon(icon, size: 44, color: kCharcoal)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: kCharcoal,
+              height: 1.08,
+              letterSpacing: -0.8,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: const ShapeDecoration(color: kWhite, shape: StadiumBorder()),
+            child: Row(
+              children: [
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    summary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kCharcoal),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: onAction,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kCharcoal,
+                    foregroundColor: kWhite,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  child: Text(actionLabel),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Charcoal card with a row of counts, a big title and an arrow; the whole card is tappable.
-class HeroCard extends StatelessWidget {
-  final List<(String, int)> stats;
-  final String title;
-  final VoidCallback onTap;
+typedef NavItem = ({IconData icon, String label, int badge});
 
-  const HeroCard({super.key, required this.stats, required this.title, required this.onTap});
+/// Floating charcoal pill navigation; the selected item sits in a white pill.
+/// [action] (e.g. a round "+" button) goes to its right.
+class FloatingNavBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<NavItem> items;
+  final Widget? action;
+
+  const FloatingNavBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.items,
+    this.action,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: kCharcoal,
-      borderRadius: BorderRadius.circular(26),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IntrinsicHeight(
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 64,
+                padding: const EdgeInsets.all(5),
+                decoration: const ShapeDecoration(color: kCharcoal, shape: StadiumBorder()),
                 child: Row(
                   children: [
-                    for (final (i, (label, value)) in stats.indexed) ...[
-                      if (i > 0) VerticalDivider(width: 24, color: kWhite.withValues(alpha: 0.2)),
+                    for (final (i, item) in items.indexed)
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12, color: kWhite.withValues(alpha: 0.6)),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$value',
-                              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w300, color: kYellow),
-                            ),
-                          ],
-                        ),
+                        child: _NavButton(item: item, selected: i == selectedIndex, onTap: () => onSelected(i)),
                       ),
-                    ],
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: kWhite,
-                        height: 1.05,
-                        letterSpacing: -0.8,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ArrowButton(onPressed: onTap, tooltip: title.replaceAll('\n', ' ')),
-                ],
+            ),
+            if (action != null) ...[const SizedBox(width: 10), action!],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  final NavItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavButton({required this.item, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = selected ? kCharcoal : kWhite.withValues(alpha: 0.75);
+    return Semantics(
+      selected: selected,
+      child: Material(
+        color: selected ? kWhite : Colors.transparent,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Badge(
+                isLabelVisible: item.badge > 0,
+                label: Text('${item.badge}'),
+                child: Icon(item.icon, size: 22, color: fg),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: fg),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Bottom navigation with a hairline on top instead of a shadow.
-class FlatNavBar extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-  final List<Widget> destinations;
-
-  const FlatNavBar({super.key, required this.selectedIndex, required this.onSelected, required this.destinations});
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: kLine))),
-      child: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: onSelected,
-        destinations: destinations,
       ),
     );
   }
@@ -438,7 +605,7 @@ class EmptyState extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(32, 96, 32, 32),
       children: [
-        Center(child: IconBox(icon, size: 64)),
+        Center(child: IconBox(icon, size: 64, color: kWhite)),
         const SizedBox(height: 16),
         Text(
           message,

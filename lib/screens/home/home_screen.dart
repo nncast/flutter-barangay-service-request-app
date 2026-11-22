@@ -36,40 +36,33 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final unread = context.select<RequestProvider, int>((rp) => rp.unreadCount);
-    Widget alerts(IconData icon) => Badge(label: Text('$unread'), isLabelVisible: unread > 0, child: Icon(icon));
 
     return Scaffold(
       // IndexedStack keeps each tab's scroll position and filters.
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          DashboardPage(onSeeAll: () => _selectTab(1)),
+          DashboardPage(onSeeAll: () => _selectTab(1), onOpenAlerts: () => _selectTab(2)),
           const MyRequestsScreen(),
           const NotificationsScreen(),
           const ProfileScreen(),
         ],
       ),
-      bottomNavigationBar: FlatNavBar(
+      bottomNavigationBar: FloatingNavBar(
         selectedIndex: _selectedIndex,
         onSelected: _selectTab,
-        destinations: [
-          const NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          const NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'My Requests',
-          ),
-          NavigationDestination(
-            icon: alerts(Icons.notifications_outlined),
-            selectedIcon: alerts(Icons.notifications),
-            label: 'Alerts',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+        items: [
+          (icon: Icons.home_outlined, label: 'Home', badge: 0),
+          (icon: Icons.receipt_long_outlined, label: 'Requests', badge: 0),
+          (icon: Icons.notifications_none, label: 'Alerts', badge: unread),
+          (icon: Icons.person_outline, label: 'Profile', badge: 0),
         ],
+        action: RoundButton(
+          icon: Icons.add,
+          tooltip: 'New request',
+          size: 64,
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubmitRequestScreen())),
+        ),
       ),
     );
   }
@@ -77,8 +70,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class DashboardPage extends StatelessWidget {
   final VoidCallback? onSeeAll;
+  final VoidCallback? onOpenAlerts;
 
-  const DashboardPage({super.key, this.onSeeAll});
+  const DashboardPage({super.key, this.onSeeAll, this.onOpenAlerts});
 
   Future<void> _openSubmit(BuildContext context, [CategoryModel? category]) async {
     await Navigator.push(
@@ -105,16 +99,25 @@ class DashboardPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             children: [
-              Greeting(name: user?.name ?? 'Resident', initials: user?.initials ?? 'U'),
-              const SizedBox(height: 20),
+              Greeting(
+                name: user?.name ?? 'Resident',
+                initials: user?.initials ?? 'U',
+                lead: 'Here\'s your ',
+                accent: 'request update.',
+                onBell: onOpenAlerts,
+                unread: rp.unreadCount,
+              ),
+              const SizedBox(height: 22),
               HeroCard(
-                stats: [
-                  ('Total', requests.length),
-                  ('Active', active),
-                  ('Completed', requests.where((r) => r.status == 'completed').length),
-                ],
-                title: 'Submit a new\nrequest',
-                onTap: () => _openSubmit(context),
+                tag: 'Your requests',
+                icon: Icons.assignment_outlined,
+                title: active == 0
+                    ? 'Nothing pending\nright now'
+                    : '$active ${active == 1 ? 'request' : 'requests'}\nin progress',
+                summary:
+                    '${requests.length} total · ${requests.where((r) => r.status == 'completed').length} completed',
+                actionLabel: 'New request',
+                onAction: () => _openSubmit(context),
               ),
               const SizedBox(height: 32),
               const SectionTitle('Available Services'),
@@ -148,7 +151,7 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(height: 32),
               SectionTitle(
                 'Recent Requests',
-                trailing: requests.isEmpty ? null : ArrowButton(onPressed: onSeeAll, tooltip: 'See all'),
+                onViewAll: requests.isEmpty ? null : onSeeAll,
               ),
               const SizedBox(height: 12),
               if (rp.loading && requests.isEmpty)
@@ -165,12 +168,12 @@ class DashboardPage extends StatelessWidget {
                     padding: EdgeInsets.all(32),
                     child: Column(
                       children: [
-                        IconBox(Icons.inbox_outlined, size: 56, color: kWhite),
+                        IconBox(Icons.inbox_outlined, size: 56),
                         SizedBox(height: 12),
                         Text('No requests yet', style: TextStyle(fontWeight: FontWeight.w700, color: kCharcoal)),
                         SizedBox(height: 4),
                         Text(
-                          'Tap the card above to submit your first request',
+                          'Tap New request above to submit your first one',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 12, color: kGray),
                         ),
@@ -196,6 +199,7 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tone = toneOf(colorFromHex(category.colorHex));
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
@@ -215,7 +219,7 @@ class _CategoryCard extends StatelessWidget {
               const Spacer(),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Icon(categoryIcon(category.icon), size: 34, color: kOrange),
+                child: IconBox(categoryIcon(category.icon), size: 48, color: tone.bg, iconColor: tone.fg),
               ),
             ],
           ),
@@ -277,7 +281,7 @@ class RequestListCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconBox(categoryIcon(request.category?.icon), size: 44, color: kCharcoal),
+                  IconBox(categoryIcon(request.category?.icon), size: 44),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

@@ -65,7 +65,7 @@ class NotificationsScreen extends StatelessWidget {
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
                       onTap: () => _open(context, notification),
-                      leading: IconBox(_iconForType(notification.type), size: 40, color: notification.isRead ? kWhite : kYellow),
+                      leading: IconBox(_iconForType(notification.type), size: 40, color: notification.isRead ? kSurface : kYellow),
                       title: Text(
                         notification.title,
                         style: TextStyle(

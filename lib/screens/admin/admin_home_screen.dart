@@ -54,22 +54,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           const AdminProfilePage(),
         ],
       ),
-      bottomNavigationBar: FlatNavBar(
+      bottomNavigationBar: FloatingNavBar(
         selectedIndex: _selectedIndex,
         onSelected: (index) => setState(() => _selectedIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.space_dashboard_outlined),
-            selectedIcon: Icon(Icons.space_dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Requests',
-          ),
-          NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Users'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
+        items: const [
+          (icon: Icons.space_dashboard_outlined, label: 'Dashboard', badge: 0),
+          (icon: Icons.receipt_long_outlined, label: 'Requests', badge: 0),
+          (icon: Icons.people_outline, label: 'Users', badge: 0),
+          (icon: Icons.person_outline, label: 'Profile', badge: 0),
         ],
       ),
     );
@@ -94,16 +86,20 @@ class AdminDashboardPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             children: [
-              Greeting(name: user?.name ?? 'Admin', initials: user?.initials ?? 'A'),
-              const SizedBox(height: 20),
+              Greeting(
+                name: user?.name ?? 'Admin',
+                initials: user?.initials ?? 'A',
+                lead: 'Here\'s the ',
+                accent: 'request queue.',
+              ),
+              const SizedBox(height: 22),
               HeroCard(
-                stats: [
-                  ('Today', stats.today),
-                  ('This week', stats.thisWeek),
-                  ('This month', stats.thisMonth),
-                ],
+                tag: 'Review queue',
+                icon: Icons.inbox_outlined,
                 title: '${stats.countFor('pending')} waiting\nfor review',
-                onTap: () => onOpenRequests('pending'),
+                summary: '${stats.today} today · ${stats.thisWeek} this week',
+                actionLabel: 'Review',
+                onAction: () => onOpenRequests('pending'),
               ),
               const SizedBox(height: 32),
               const SectionTitle('Requests by Status'),
@@ -130,7 +126,7 @@ class AdminDashboardPage extends StatelessWidget {
               const SizedBox(height: 32),
               SectionTitle(
                 'Recent Requests',
-                trailing: ArrowButton(onPressed: () => onOpenRequests('all'), tooltip: 'See all'),
+                onViewAll: () => onOpenRequests('all'),
               ),
               const SizedBox(height: 12),
               if (rp.loading && rp.requests.isEmpty)
@@ -183,20 +179,7 @@ class _AdminStatCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w300, color: kCharcoal, height: 1.1),
               ),
               const SizedBox(height: 6),
-              Row(
-                children: [
-                  Dot(statusColor(status)),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      statusLabel(status),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: kGray, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
+              StatusChip(status: status),
             ],
           ),
         ),
@@ -225,7 +208,7 @@ class AdminRequestCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconBox(categoryIcon(request.category?.icon), size: 44, color: kCharcoal),
+              IconBox(categoryIcon(request.category?.icon), size: 44),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -261,7 +244,7 @@ class AdminRequestCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Tag(
                       label: priorityLabel(request.priority).toUpperCase(),
-                      color: priorityColor(request.priority),
+                      tone: priorityTone(request.priority),
                       fontSize: 10,
                     ),
                   ],
@@ -671,7 +654,7 @@ class _HistorySection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Tag(label: log.newStatusLabel, color: statusColor(log.newStatus), fontSize: 10),
+                  Tag(label: log.newStatusLabel, tone: statusTone(log.newStatus), fontSize: 10),
                   if (log.note?.isNotEmpty ?? false)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
@@ -836,7 +819,7 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
       selected: isSelected,
       showCheckmark: false,
       onSelected: (_) => widget.filter.value = status,
-      backgroundColor: kSurface,
+      backgroundColor: kWhite,
       selectedColor: kCharcoal,
       side: BorderSide.none,
       shape: const StadiumBorder(),
@@ -867,7 +850,7 @@ class AdminProfilePage extends StatelessWidget {
           const SizedBox(height: 4),
           Text(user?.email ?? '', textAlign: TextAlign.center, style: const TextStyle(color: kGray)),
           const SizedBox(height: 12),
-          Center(child: Tag(label: (user?.roleLabel ?? 'Admin').toUpperCase(), color: kCharcoal)),
+          Center(child: Tag(label: (user?.roleLabel ?? 'Admin').toUpperCase(), tone: roleTone(user?.role ?? 'admin'))),
           const SizedBox(height: 40),
           OutlinedButton.icon(
             onPressed: () => confirmLogout(context),

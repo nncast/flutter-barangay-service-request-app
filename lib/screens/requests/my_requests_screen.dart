@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../providers/request_provider.dart';
 import '../../core/ui_helpers.dart';
 import '../home/home_screen.dart';
-import 'submit_request_screen.dart';
 
 class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
@@ -55,14 +54,6 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> with SingleTickerPr
           }).toList(),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SubmitRequestScreen()),
-        ),
-        icon: const Icon(Icons.add),
-        label: const Text('New Request'),
-      ),
       body: RefreshIndicator(
         onRefresh: rp.fetchRequests,
         child: rp.loading && rp.requests.isEmpty
@@ -77,7 +68,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> with SingleTickerPr
                     hint: rp.error != null
                         ? 'Pull down to try again'
                         : current == 'all'
-                            ? 'Tap + New Request to create one'
+                            ? 'Tap + to create one'
                             : null,
                     action: current == 'all'
                         ? null

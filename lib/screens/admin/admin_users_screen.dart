@@ -6,18 +6,6 @@ import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../core/ui_helpers.dart';
 
-Color _roleColor(String role) {
-  switch (role) {
-    case 'admin':
-      return kCharcoal;
-    case 'staff':
-      return kOrange;
-    case 'resident':
-      return kYellow;
-    default:
-      return kMuted;
-  }
-}
 
 const _roleOrder = {'admin': 0, 'staff': 1, 'resident': 2};
 
@@ -110,7 +98,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 const SizedBox(width: 10),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                    color: kWhite,
+                    border: Border.all(color: kOutline),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _filterRole,
@@ -136,9 +128,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _statChip('Total', users.length),
-                _statChip('Admins', users.where((u) => u.role == 'admin').length, _roleColor('admin')),
-                _statChip('Staff', users.where((u) => u.role == 'staff').length, _roleColor('staff')),
-                _statChip('Residents', users.where((u) => u.role == 'resident').length, _roleColor('resident')),
+                _statChip('Admins', users.where((u) => u.role == 'admin').length, roleTone('admin').dot),
+                _statChip('Staff', users.where((u) => u.role == 'staff').length, roleTone('staff').dot),
+                _statChip('Residents', users.where((u) => u.role == 'resident').length, roleTone('resident').dot),
                 if (inactiveCount > 0) _statChip('Inactive', inactiveCount, kMuted),
               ],
             ),
@@ -198,7 +190,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       padding: const EdgeInsets.only(right: 8),
       child: Chip(
         visualDensity: VisualDensity.compact,
-        backgroundColor: kSurface,
+        backgroundColor: kWhite,
         side: BorderSide.none,
         shape: const StadiumBorder(),
         avatar: color == null ? null : Dot(color),
@@ -427,14 +419,14 @@ class _UserCard extends StatelessWidget {
     this.onDelete,
   });
 
-  Widget _badge(String text, Color color) => Padding(
+  Widget _badge(String text, Tone tone) => Padding(
         padding: const EdgeInsets.only(right: 6, top: 6),
-        child: Tag(label: text, color: color, fontSize: 10),
+        child: Tag(label: text, tone: tone, fontSize: 10),
       );
 
   @override
   Widget build(BuildContext context) {
-    final color = user.isActive ? _roleColor(user.role) : kMuted;
+    final tone = user.isActive ? roleTone(user.role) : kGrayTone;
 
     return Opacity(
       opacity: user.isActive ? 1 : 0.65,
@@ -442,7 +434,7 @@ class _UserCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         child: ListTile(
           contentPadding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
-          leading: InitialsAvatar(initials: user.initials, radius: 20, color: color),
+          leading: InitialsAvatar(initials: user.initials, radius: 20, color: tone.bg, textColor: tone.fg),
           title: Text(
             user.name,
             maxLines: 1,
@@ -460,9 +452,9 @@ class _UserCard extends StatelessWidget {
               ),
               Wrap(
                 children: [
-                  _badge(user.roleLabel, color),
-                  if (isCurrentUser) _badge('You', kLine),
-                  if (!user.isActive) _badge('Inactive', kMuted),
+                  _badge(user.roleLabel, tone),
+                  if (isCurrentUser) _badge('You', kOrangeTone),
+                  if (!user.isActive) _badge('Inactive', kGrayTone),
                 ],
               ),
             ],
